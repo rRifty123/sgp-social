@@ -104,209 +104,135 @@
     </div>
 
     <script>
-        let users = JSON.parse(localStorage.getItem('sgp_users')) || {};
-        let posts = JSON.parse(localStorage.getItem('sgp_posts')) || [];
-        let chats = JSON.parse(localStorage.getItem('sgp_chats')) || {};
-        let currentUser = JSON.parse(localStorage.getItem('sgp_session')) || null;
-        let activeChatPartner = null;
+      <script type="module">
+  // 1. Import Firebase Engines (CDN Version for GitHub)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        function launch(device) {
-            document.getElementById('selector-layer').remove();
-            const app = document.getElementById('app-container');
-            app.className = device; app.style.display = 'block';
-            if (currentUser) { renderFeed(); showScreen('feed-screen'); } else { showScreen('signup-screen'); }
-        }
+  // 2. Your SGP Config (Already plugged in!)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
+    authDomain: "sgp-social.firebaseapp.com",
+    projectId: "sgp-social",
+    storageBucket: "sgp-social.firebasestorage.app",
+    messagingSenderId: "886036235471",
+    appId: "1:886036235471:web:4bc1421cdc95da504ae3ba"
+  };
 
-        function save() {
-            localStorage.setItem('sgp_users', JSON.stringify(users));
-            localStorage.setItem('sgp_posts', JSON.stringify(posts));
-            localStorage.setItem('sgp_chats', JSON.stringify(chats));
-            localStorage.setItem('sgp_session', JSON.stringify(currentUser));
-        }
+  // 3. Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(id === 'friends-screen') renderFriends();
-        }
+  // Global variables to keep the app running smooth
+  let currentUser = JSON.parse(localStorage.getItem('sgp_session')) || null;
+  let allUsers = {};
+  let allPosts = [];
 
-        // --- SOCIAL LOGIC ---
-        function viewProfile(handle) {
-            const u = users[handle];
-            showScreen('profile-screen');
-            document.getElementById('view-name').innerText = u.name;
-            document.getElementById('view-handle').innerText = "@" + u.user;
-            document.getElementById('count-foll').innerText = (u.following || []).length;
-            document.getElementById('count-friends').innerText = (u.friends || []).length;
+  // --- AUTH LOGIC ---
+  window.doSignup = async () => {
+    const u = document.getElementById('reg-user').value.toLowerCase().trim();
+    const n = document.getElementById('reg-name').value;
+    const p = document.getElementById('reg-pass').value;
+    if(!u || !p) return alert("Fill in details");
 
-            const actions = document.getElementById('profile-actions');
-            actions.innerHTML = "";
-            
-            if(handle !== currentUser.user) {
-                // Follow Button
-                const isFollowing = (currentUser.following || []).includes(handle);
-                actions.innerHTML += `<button class="btn" onclick="toggleFollow('${handle}')">${isFollowing ? 'Unfollow' : 'Follow'}</button>`;
-                
-                // Friend Logic
-                const isFriend = (currentUser.friends || []).includes(handle);
-                const hasSentReq = (u.requests || []).includes(currentUser.user);
-                const receivedReq = (currentUser.requests || []).includes(handle);
+    const userRef = doc(db, "users", u);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) return alert("Username taken!");
 
-                if(isFriend) {
-                    actions.innerHTML += `<button class="btn" style="background:#22c55e" onclick="openChat('${handle}')">Message</button>`;
-                } else if(receivedReq) {
-                    actions.innerHTML += `<button class="btn" style="background:var(--accent)" onclick="acceptFriend('${handle}')">Accept Request</button>`;
-                } else {
-                    actions.innerHTML += `<button class="btn" onclick="sendFriendReq('${handle}')" ${hasSentReq ? 'disabled' : ''}>${hasSentReq ? 'Requested' : 'Add Friend'}</button>`;
-                }
-            } else {
-                actions.innerHTML = `<button class="btn" style="background:#ef4444" onclick="localStorage.removeItem('sgp_session'); location.reload();">Logout</button>`;
-            }
+    const userData = { user: u, name: n, pass: p, friends: [], following: [], requests: [] };
+    await setDoc(userRef, userData);
+    localStorage.setItem('sgp_session', JSON.stringify(userData));
+    location.reload();
+  };
 
-            const container = document.getElementById('view-posts');
-            container.innerHTML = "";
-            posts.filter(p => p.author === handle).forEach(p => container.appendChild(createPostUI(p)));
-        }
+  window.doLogin = async () => {
+    const u = document.getElementById('log-user').value.toLowerCase().trim();
+    const p = document.getElementById('log-pass').value;
+    const userSnap = await getDoc(doc(db, "users", u));
 
-        function toggleFollow(handle) {
-            if(!currentUser.following) currentUser.following = [];
-            if(currentUser.following.includes(handle)) currentUser.following = currentUser.following.filter(h => h !== handle);
-            else currentUser.following.push(handle);
-            users[currentUser.user] = currentUser; save(); viewProfile(handle);
-        }
+    if (userSnap.exists() && userSnap.data().pass === p) {
+      localStorage.setItem('sgp_session', JSON.stringify(userSnap.data()));
+      location.reload();
+    } else { alert("Login failed!"); }
+  };
 
-        function sendFriendReq(handle) {
-            if(!users[handle].requests) users[handle].requests = [];
-            if(!users[handle].requests.includes(currentUser.user)) {
-                users[handle].requests.push(currentUser.user);
-                save(); viewProfile(handle);
-            }
-        }
+  // --- REAL-TIME DATA ---
+  const qPosts = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  onSnapshot(qPosts, (snapshot) => {
+    allPosts = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+    renderFeed();
+  });
 
-        function acceptFriend(handle) {
-            if(!currentUser.friends) currentUser.friends = [];
-            if(!users[handle].friends) users[handle].friends = [];
-            
-            currentUser.friends.push(handle);
-            users[handle].friends.push(currentUser.user);
-            currentUser.requests = (currentUser.requests || []).filter(r => r !== handle);
-            
-            users[currentUser.user] = currentUser;
-            save(); viewProfile(handle);
-        }
+  onSnapshot(collection(db, "users"), (snapshot) => {
+    snapshot.forEach(doc => { allUsers[doc.id] = doc.data(); });
+    if(currentUser && allUsers[currentUser.user]) {
+      currentUser = allUsers[currentUser.user];
+      localStorage.setItem('sgp_session', JSON.stringify(currentUser));
+    }
+  });
 
-        function renderFriends() {
-            const query = document.getElementById('f-search').value.toLowerCase();
-            const reqArea = document.getElementById('pending-req-area');
-            const listArea = document.getElementById('friends-list');
-            
-            // Pending Requests
-            reqArea.innerHTML = (currentUser.requests || []).length > 0 ? "<h4>Pending Requests</h4>" : "";
-            (currentUser.requests || []).forEach(r => {
-                reqArea.innerHTML += `<div class="friend-card"><span>@${r}</span><button class="btn" onclick="viewProfile('${r}')">View</button></div>`;
-            });
+  // --- UI ACTIONS ---
+  window.launch = (device) => {
+    document.getElementById('selector-layer').remove();
+    const app = document.getElementById('app-container');
+    app.className = device; app.style.display = 'block';
+    if (!currentUser) showScreen('signup-screen');
+  };
 
-            // Friends List / Search
-            listArea.innerHTML = "<h4>Your Network</h4>";
-            Object.values(users).forEach(u => {
-                if(u.user === currentUser.user) return;
-                if(u.user.includes(query) || u.name.toLowerCase().includes(query)) {
-                    const isFriend = (currentUser.friends || []).includes(u.user);
-                    listArea.innerHTML += `
-                        <div class="friend-card">
-                            <span><b>${u.name}</b><br><small>@${u.user}</small></span>
-                            <div>
-                                <button class="btn" onclick="viewProfile('${u.user}')">Profile</button>
-                                ${isFriend ? `<button class="btn" style="background:#22c55e" onclick="openChat('${u.user}')">Msg</button>` : ''}
-                            </div>
-                        </div>`;
-                }
-            });
-        }
+  window.showScreen = (id) => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  };
 
-        // --- CHAT LOGIC ---
-        function openChat(handle) {
-            activeChatPartner = handle;
-            document.getElementById('chat-modal').style.display = 'flex';
-            document.getElementById('chat-title').innerText = "Chat with " + handle;
-            renderMessages();
-        }
+  window.makePost = async () => {
+    const t = document.getElementById('post-text').value;
+    if(!t || !currentUser) return;
+    await addDoc(collection(db, "posts"), {
+      author: currentUser.user,
+      content: t,
+      hearts: [],
+      createdAt: serverTimestamp()
+    });
+    document.getElementById('post-text').value = "";
+    document.getElementById('post-modal').style.display = 'none';
+  };
 
-        function closeChat() { document.getElementById('chat-modal').style.display = 'none'; }
+  window.renderFeed = () => {
+    const c = document.getElementById('feed-items');
+    if(!c) return;
+    c.innerHTML = allPosts.map(p => `
+      <div class="post" style="background:#1e293b; padding:15px; margin-bottom:1px; border-bottom:1px solid #334155;">
+        <strong style="color:#6366f1; cursor:pointer;" onclick="viewProfile('${p.author}')">@${p.author}</strong>
+        <p style="margin:10px 0; color:white;">${p.content}</p>
+      </div>
+    `).join('');
+  };
 
-        function sendMsg() {
-            const text = document.getElementById('chat-input').value;
-            if(!text) return;
-            const chatId = [currentUser.user, activeChatPartner].sort().join('_');
-            if(!chats[chatId]) chats[chatId] = [];
-            chats[chatId].push({ from: currentUser.user, text: text, time: Date.now() });
-            save();
-            document.getElementById('chat-input').value = "";
-            renderMessages();
-        }
+  window.viewProfile = (handle) => {
+    const u = allUsers[handle];
+    if(!u) return;
+    showScreen('profile-screen');
+    document.getElementById('view-name').innerText = u.name;
+    document.getElementById('view-handle').innerText = "@" + u.user;
+    
+    const actions = document.getElementById('profile-actions');
+    if(handle !== currentUser.user) {
+        actions.innerHTML = `<button class="btn" onclick="alert('Connection pending database rules!')">Add Friend</button>`;
+    } else {
+        actions.innerHTML = `<button class="btn" style="background:#ef4444" onclick="localStorage.clear(); location.reload();">Logout</button>`;
+    }
+  };
 
-        function renderMessages() {
-            const chatId = [currentUser.user, activeChatPartner].sort().join('_');
-            const msgs = chats[chatId] || [];
-            const container = document.getElementById('chat-msgs');
-            container.innerHTML = msgs.map(m => `
-                <div class="msg ${m.from === currentUser.user ? 'msg-me' : 'msg-them'}">${m.text}</div>
-            `).join('');
-            container.scrollTop = container.scrollHeight;
-        }
+  window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
+  window.closePostModal = () => document.getElementById('post-modal').style.display = 'none';
 
-        // --- FEED & POSTS ---
-        function createPostUI(p) {
-            const div = document.createElement('div');
-            div.className = 'post';
-            div.innerHTML = `
-                <strong onclick="viewProfile('${p.author}')" style="cursor:pointer; color:var(--primary)">@${p.author}</strong>
-                <p style="margin:8px 0">${p.content}</p>
-                <div class="post-actions">
-                    <span class="stat" onclick="react('${p.id}', 'hearts')">❤️ ${p.hearts.length}</span>
-                    <span class="stat" onclick="react('${p.id}', 'breaks')">💔 ${p.breaks.length}</span>
-                </div>
-            `;
-            return div;
-        }
-
-        function renderFeed() {
-            const c = document.getElementById('feed-items'); c.innerHTML = "";
-            posts.forEach(p => c.appendChild(createPostUI(p)));
-        }
-
-        function openPostModal() { document.getElementById('post-modal').style.display = 'flex'; }
-        function closePostModal() { document.getElementById('post-modal').style.display = 'none'; }
-        function makePost() {
-            const txt = document.getElementById('post-text').value; if(!txt) return;
-            posts.unshift({ id: Date.now(), author: currentUser.user, content: txt, hearts: [], breaks: [] });
-            save(); closePostModal(); renderFeed();
-        }
-
-        function react(pid, type) {
-            const p = posts.find(x => x.id == pid);
-            const other = (type === 'hearts') ? 'breaks' : 'hearts';
-            p[other] = p[other].filter(u => u !== currentUser.user);
-            if(p[type].includes(currentUser.user)) p[type] = p[type].filter(u => u !== currentUser.user);
-            else p[type].push(currentUser.user);
-            save(); renderFeed();
-        }
-
-        // --- AUTH ---
-        function doSignup() {
-            const u = document.getElementById('reg-user').value.toLowerCase().trim();
-            const n = document.getElementById('reg-name').value;
-            const p = document.getElementById('reg-pass').value;
-            if(!u || !p) return;
-            users[u] = { user: u, name: n, pass: p, friends: [], following: [], requests: [] };
-            currentUser = users[u]; save(); showScreen('feed-screen'); renderFeed();
-        }
-        function doLogin() {
-            const u = document.getElementById('log-user').value.toLowerCase().trim();
-            const p = document.getElementById('log-pass').value;
-            if(users[u] && users[u].pass === p) { currentUser = users[u]; save(); showScreen('feed-screen'); renderFeed(); }
-            else alert("Invalid login");
-        }
-    </script>
+  // Initial Check
+  if(currentUser) {
+    showScreen('feed-screen');
+    renderFeed();
+  }
+</script>
+</script>
+    
 </body>
 </html>
