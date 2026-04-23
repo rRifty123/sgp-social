@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SGP Social - Discovery Edition</title>
+    <title>SGP Social - Secure Connect</title>
     <style>
         :root {
             --primary: #6366f1; --accent: #ec4899; --bg: #0f172a;
@@ -20,82 +20,95 @@
         .screen { display: none; width: 100%; height: 100%; flex-direction: column; overflow-y: auto; padding-bottom: 80px; }
         .active { display: flex !important; }
 
-        .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: var(--primary); color: white; margin: 5px; }
+        .btn { padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: var(--primary); color: white; margin: 2px; font-size: 0.8rem; }
         .input-box { width: 90%; padding: 12px; margin: 8px auto; background: var(--surface); border: 1px solid #334155; color: white; border-radius: 8px; display: block; }
         .nav-bar { position: absolute; bottom: 0; width: 100%; height: 65px; background: #1e293b; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #334155; z-index: 100; }
         
-        .post { background: var(--surface); margin-bottom: 10px; padding: 15px; border-bottom: 1px solid #334155; width: 100%; }
-        .media-preview { width: 100%; border-radius: 8px; margin: 10px 0; max-height: 250px; object-fit: cover; }
-        .post-actions { display: flex; gap: 10px; margin-top: 10px; color: var(--text-dim); font-size: 0.8rem; }
-        .stat { cursor: pointer; border: 1px solid #475569; padding: 4px 10px; border-radius: 20px; }
-        .stat.active-react { background: var(--primary); color: white; border-color: var(--primary); }
+        .post { background: var(--surface); margin-bottom: 10px; padding: 15px; border-bottom: 1px solid #334155; }
+        .post-actions { display: flex; gap: 10px; margin-top: 10px; color: var(--text-dim); font-size: 0.75rem; align-items: center; }
+        .stat { cursor: pointer; border: 1px solid #475569; padding: 3px 8px; border-radius: 15px; }
 
-        .reply-box { background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 10px; display: none; }
-        .reply-item { font-size: 0.8rem; padding: 5px; border-left: 2px solid var(--primary); margin-bottom: 5px; color: var(--text-dim); }
+        .chat-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 6000; display: none; flex-direction: column; }
+        .msg { padding: 10px; border-radius: 10px; margin: 5px; max-width: 80%; font-size: 0.9rem; }
+        .msg-me { align-self: flex-end; background: var(--primary); }
+        .msg-them { align-self: flex-start; background: var(--surface); }
 
-        #post-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 5000; display: none; flex-direction: column; padding: 15px; }
-        
-        .search-container { padding: 10px; background: var(--surface); border-radius: 12px; margin: 10px; }
+        .friend-card { background: var(--surface); padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
     <div id="selector-layer">
         <h1>SGP Social</h1>
-        <button class="btn" onclick="launch('device-phone')" style="width:200px">📱 Phone</button>
-        <button class="btn" onclick="launch('device-desktop')" style="width:200px">💻 Desktop</button>
-        <button onclick="clearAllData()" style="margin-top:40px; background:transparent; color:red; border:none; cursor:pointer; font-size:0.7rem;">[ Reset App Data ]</button>
+        <button class="btn" onclick="launch('device-phone')" style="width:200px">📱 Phone View</button>
+        <button class="btn" onclick="launch('device-desktop')" style="width:200px">💻 Desktop View</button>
     </div>
 
     <div id="app-container">
-        <div id="login-screen" class="screen"><div style="margin:auto; width:100%; text-align:center; padding:20px;"><h2>Login</h2><input type="text" id="log-user" class="input-box" placeholder="Username"><input type="password" id="log-pass" class="input-box" placeholder="Password"><button class="btn" style="width:90%" onclick="doLogin()">Log In</button><p onclick="showScreen('signup-screen')" style="margin-top:15px; cursor:pointer; color:var(--accent)">Create Account</p></div></div>
-        <div id="signup-screen" class="screen"><div style="margin:auto; width:100%; text-align:center; padding:20px;"><h2>Sign Up</h2><input type="text" id="reg-user" class="input-box" placeholder="Username"><input type="text" id="reg-name" class="input-box" placeholder="Full Name"><input type="password" id="reg-pass" class="input-box" placeholder="Password"><button class="btn" style="width:90%" onclick="doSignup()">Join</button><p onclick="showScreen('login-screen')" style="margin-top:15px; cursor:pointer; color:var(--accent)">Login</p></div></div>
+        <div id="signup-screen" class="screen"><div style="margin:auto; width:100%; text-align:center; padding:20px;"><h2>Join SGP</h2><input type="text" id="reg-user" class="input-box" placeholder="Username"><input type="text" id="reg-name" class="input-box" placeholder="Name"><input type="password" id="reg-pass" class="input-box" placeholder="Password"><button class="btn" style="width:90%" onclick="doSignup()">Sign Up</button><p onclick="showScreen('login-screen')" style="margin-top:10px; cursor:pointer; color:var(--accent)">Login instead</p></div></div>
+        <div id="login-screen" class="screen"><div style="margin:auto; width:100%; text-align:center; padding:20px;"><h2>Login</h2><input type="text" id="log-user" class="input-box" placeholder="Username"><input type="password" id="log-pass" class="input-box" placeholder="Password"><button class="btn" style="width:90%" onclick="doLogin()">Login</button></div></div>
 
         <div id="feed-screen" class="screen active">
-            <div style="padding: 15px; border-bottom: 1px solid #334155;"><h3>Feed</h3></div>
+            <div style="padding: 15px; border-bottom: 1px solid #334155;"><h3>SGP Feed</h3></div>
             <div id="feed-items"></div>
         </div>
 
         <div id="friends-screen" class="screen">
-            <div style="padding: 15px; border-bottom: 1px solid #334155;"><h3>Connect</h3></div>
-            <div class="search-container">
-                <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">Find Users</p>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="user-search-input" class="input-box" style="margin:0; flex:1;" placeholder="Type username...">
-                    <button class="btn" style="margin:0;" onclick="searchUser()">Go</button>
-                </div>
+            <div style="padding: 15px; border-bottom: 1px solid #334155;"><h3>Social</h3></div>
+            <div style="padding: 10px;">
+                <input type="text" id="f-search" class="input-box" placeholder="Search users..." onkeyup="renderFriends()">
+                <div id="pending-req-area"></div>
+                <hr style="border:0; border-top:1px solid #334155; margin:10px 0;">
+                <div id="friends-list"></div>
             </div>
-            <div id="friends-list" style="padding:10px;"></div>
         </div>
 
         <div id="profile-screen" class="screen">
-            <div style="padding: 30px 15px; text-align: center; background: #1e293b;"><div style="width:60px; height:60px; background:var(--primary); border-radius:50%; margin: 0 auto 10px;"></div><h2 id="view-name">Name</h2><p id="view-handle" style="color:var(--text-dim)">@user</p><div id="profile-actions" style="margin-top:15px"></div></div>
+            <div style="padding: 30px 15px; text-align: center; background: #1e293b;">
+                <h2 id="view-name">Name</h2>
+                <p id="view-handle" style="color:var(--text-dim)">@user</p>
+                <div style="display:flex; justify-content:center; gap:15px; margin: 10px 0; font-size: 0.8rem;">
+                    <span><b id="count-foll">0</b> Following</span>
+                    <span><b id="count-friends">0</b> Friends</span>
+                </div>
+                <div id="profile-actions"></div>
+            </div>
             <div id="view-posts"></div>
         </div>
 
-        <div class="nav-bar">
-            <span onclick="showScreen('feed-screen')" style="cursor:pointer">🏠</span>
-            <span onclick="showScreen('friends-screen')" style="cursor:pointer">💬</span>
-            <span onclick="openPostModal()" style="font-size:2rem; color:var(--accent); cursor:pointer">+</span>
-            <span onclick="viewProfile(currentUser.user)" style="cursor:pointer">👤</span>
+        <div id="chat-modal" class="chat-modal">
+            <div style="padding:15px; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center;">
+                <h4 id="chat-title">Chat</h4>
+                <button class="btn" onclick="closeChat()">Close</button>
+            </div>
+            <div id="chat-msgs" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; padding:10px;"></div>
+            <div style="padding:10px; display:flex; gap:5px;">
+                <input type="text" id="chat-input" class="input-box" style="margin:0; flex:1" placeholder="Type message...">
+                <button class="btn" onclick="sendMsg()">Send</button>
+            </div>
         </div>
 
-        <div id="post-modal">
-            <h2 style="margin-bottom:10px">New Post</h2>
-            <textarea id="post-text" placeholder="What's happening?" style="width:100%; height:120px; background:var(--surface); color:white; padding:12px; border-radius:10px; border:none; resize:none;"></textarea>
-            <input type="file" id="media-input" accept="image/*" style="display:none" onchange="previewFile(this)">
-            <button class="btn" style="background:#475569; width:100%" onclick="document.getElementById('media-input').click()">📷 Media</button>
-            <p id="file-status" style="font-size:0.7rem; color:var(--accent); text-align:center;"></p>
-            <button class="btn" style="background:var(--accent); width:100%" onclick="makePost()">Post</button>
-            <button class="btn" style="background:transparent; width:100%" onclick="closePostModal()">Cancel</button>
+        <div class="nav-bar">
+            <span onclick="showScreen('feed-screen')">🏠</span>
+            <span onclick="showScreen('friends-screen')">💬</span>
+            <span onclick="openPostModal()" style="font-size:1.5rem; color:var(--accent)">+</span>
+            <span onclick="viewProfile(currentUser.user)">👤</span>
         </div>
+    </div>
+
+    <div id="post-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9000; display:none; flex-direction:column; padding:20px;">
+        <h2>New Post</h2>
+        <textarea id="post-text" placeholder="Speak your mind..." style="width:100%; height:150px; background:var(--surface); color:white; padding:12px; border:none; margin:15px 0; border-radius:10px;"></textarea>
+        <button class="btn" style="background:var(--accent)" onclick="makePost()">Post</button>
+        <button class="btn" style="background:transparent" onclick="closePostModal()">Cancel</button>
     </div>
 
     <script>
         let users = JSON.parse(localStorage.getItem('sgp_users')) || {};
         let posts = JSON.parse(localStorage.getItem('sgp_posts')) || [];
+        let chats = JSON.parse(localStorage.getItem('sgp_chats')) || {};
         let currentUser = JSON.parse(localStorage.getItem('sgp_session')) || null;
-        let pendingMedia = null;
+        let activeChatPartner = null;
 
         function launch(device) {
             document.getElementById('selector-layer').remove();
@@ -104,61 +117,170 @@
             if (currentUser) { renderFeed(); showScreen('feed-screen'); } else { showScreen('signup-screen'); }
         }
 
+        function save() {
+            localStorage.setItem('sgp_users', JSON.stringify(users));
+            localStorage.setItem('sgp_posts', JSON.stringify(posts));
+            localStorage.setItem('sgp_chats', JSON.stringify(chats));
+            localStorage.setItem('sgp_session', JSON.stringify(currentUser));
+        }
+
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             if(id === 'friends-screen') renderFriends();
         }
 
-        function searchUser() {
-            const query = document.getElementById('user-search-input').value.toLowerCase().trim();
-            if (users[query]) { viewProfile(query); } else { alert("User not found!"); }
+        // --- SOCIAL LOGIC ---
+        function viewProfile(handle) {
+            const u = users[handle];
+            showScreen('profile-screen');
+            document.getElementById('view-name').innerText = u.name;
+            document.getElementById('view-handle').innerText = "@" + u.user;
+            document.getElementById('count-foll').innerText = (u.following || []).length;
+            document.getElementById('count-friends').innerText = (u.friends || []).length;
+
+            const actions = document.getElementById('profile-actions');
+            actions.innerHTML = "";
+            
+            if(handle !== currentUser.user) {
+                // Follow Button
+                const isFollowing = (currentUser.following || []).includes(handle);
+                actions.innerHTML += `<button class="btn" onclick="toggleFollow('${handle}')">${isFollowing ? 'Unfollow' : 'Follow'}</button>`;
+                
+                // Friend Logic
+                const isFriend = (currentUser.friends || []).includes(handle);
+                const hasSentReq = (u.requests || []).includes(currentUser.user);
+                const receivedReq = (currentUser.requests || []).includes(handle);
+
+                if(isFriend) {
+                    actions.innerHTML += `<button class="btn" style="background:#22c55e" onclick="openChat('${handle}')">Message</button>`;
+                } else if(receivedReq) {
+                    actions.innerHTML += `<button class="btn" style="background:var(--accent)" onclick="acceptFriend('${handle}')">Accept Request</button>`;
+                } else {
+                    actions.innerHTML += `<button class="btn" onclick="sendFriendReq('${handle}')" ${hasSentReq ? 'disabled' : ''}>${hasSentReq ? 'Requested' : 'Add Friend'}</button>`;
+                }
+            } else {
+                actions.innerHTML = `<button class="btn" style="background:#ef4444" onclick="localStorage.removeItem('sgp_session'); location.reload();">Logout</button>`;
+            }
+
+            const container = document.getElementById('view-posts');
+            container.innerHTML = "";
+            posts.filter(p => p.author === handle).forEach(p => container.appendChild(createPostUI(p)));
         }
 
-        function previewFile(input) { if (input.files && input.files[0]) { pendingMedia = URL.createObjectURL(input.files[0]); document.getElementById('file-status').innerText = "Attached!"; } }
-
-        function makePost() {
-            const txt = document.getElementById('post-text').value;
-            if(!txt && !pendingMedia) return;
-            const newPost = { id: Date.now(), author: currentUser.user, content: txt, hearts: [], breaks: [], media: pendingMedia, replies: [] };
-            posts.unshift(newPost);
-            save(); closePostModal(); renderFeed();
+        function toggleFollow(handle) {
+            if(!currentUser.following) currentUser.following = [];
+            if(currentUser.following.includes(handle)) currentUser.following = currentUser.following.filter(h => h !== handle);
+            else currentUser.following.push(handle);
+            users[currentUser.user] = currentUser; save(); viewProfile(handle);
         }
 
+        function sendFriendReq(handle) {
+            if(!users[handle].requests) users[handle].requests = [];
+            if(!users[handle].requests.includes(currentUser.user)) {
+                users[handle].requests.push(currentUser.user);
+                save(); viewProfile(handle);
+            }
+        }
+
+        function acceptFriend(handle) {
+            if(!currentUser.friends) currentUser.friends = [];
+            if(!users[handle].friends) users[handle].friends = [];
+            
+            currentUser.friends.push(handle);
+            users[handle].friends.push(currentUser.user);
+            currentUser.requests = (currentUser.requests || []).filter(r => r !== handle);
+            
+            users[currentUser.user] = currentUser;
+            save(); viewProfile(handle);
+        }
+
+        function renderFriends() {
+            const query = document.getElementById('f-search').value.toLowerCase();
+            const reqArea = document.getElementById('pending-req-area');
+            const listArea = document.getElementById('friends-list');
+            
+            // Pending Requests
+            reqArea.innerHTML = (currentUser.requests || []).length > 0 ? "<h4>Pending Requests</h4>" : "";
+            (currentUser.requests || []).forEach(r => {
+                reqArea.innerHTML += `<div class="friend-card"><span>@${r}</span><button class="btn" onclick="viewProfile('${r}')">View</button></div>`;
+            });
+
+            // Friends List / Search
+            listArea.innerHTML = "<h4>Your Network</h4>";
+            Object.values(users).forEach(u => {
+                if(u.user === currentUser.user) return;
+                if(u.user.includes(query) || u.name.toLowerCase().includes(query)) {
+                    const isFriend = (currentUser.friends || []).includes(u.user);
+                    listArea.innerHTML += `
+                        <div class="friend-card">
+                            <span><b>${u.name}</b><br><small>@${u.user}</small></span>
+                            <div>
+                                <button class="btn" onclick="viewProfile('${u.user}')">Profile</button>
+                                ${isFriend ? `<button class="btn" style="background:#22c55e" onclick="openChat('${u.user}')">Msg</button>` : ''}
+                            </div>
+                        </div>`;
+                }
+            });
+        }
+
+        // --- CHAT LOGIC ---
+        function openChat(handle) {
+            activeChatPartner = handle;
+            document.getElementById('chat-modal').style.display = 'flex';
+            document.getElementById('chat-title').innerText = "Chat with " + handle;
+            renderMessages();
+        }
+
+        function closeChat() { document.getElementById('chat-modal').style.display = 'none'; }
+
+        function sendMsg() {
+            const text = document.getElementById('chat-input').value;
+            if(!text) return;
+            const chatId = [currentUser.user, activeChatPartner].sort().join('_');
+            if(!chats[chatId]) chats[chatId] = [];
+            chats[chatId].push({ from: currentUser.user, text: text, time: Date.now() });
+            save();
+            document.getElementById('chat-input').value = "";
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const chatId = [currentUser.user, activeChatPartner].sort().join('_');
+            const msgs = chats[chatId] || [];
+            const container = document.getElementById('chat-msgs');
+            container.innerHTML = msgs.map(m => `
+                <div class="msg ${m.from === currentUser.user ? 'msg-me' : 'msg-them'}">${m.text}</div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // --- FEED & POSTS ---
         function createPostUI(p) {
             const div = document.createElement('div');
             div.className = 'post';
             div.innerHTML = `
-                <strong onclick="viewProfile('${p.author}')" style="color:var(--primary); cursor:pointer">@${p.author}</strong>
+                <strong onclick="viewProfile('${p.author}')" style="cursor:pointer; color:var(--primary)">@${p.author}</strong>
                 <p style="margin:8px 0">${p.content}</p>
-                ${p.media ? `<img src="${p.media}" class="media-preview">` : ''}
                 <div class="post-actions">
-                    <span class="stat ${p.hearts.includes(currentUser.user)?'active-react':''}" onclick="react('${p.id}', 'hearts')">❤️ ${p.hearts.length}</span>
-                    <span class="stat ${p.breaks.includes(currentUser.user)?'active-react':''}" onclick="react('${p.id}', 'breaks')">💔 ${p.breaks.length}</span>
-                    <span class="stat" onclick="toggleReplies('${p.id}')">💬 ${p.replies.length}</span>
-                    <span style="margin-left:auto; color:red; font-size:0.7rem;" onclick="aiReport('${p.id}')">REPORT</span>
-                </div>
-                <div class="reply-box" id="rep-box-${p.id}">
-                    <div id="rep-list-${p.id}">${p.replies.map(r => `<div class="reply-item"><strong>@${r.user}:</strong> ${r.text}</div>`).join('')}</div>
-                    <div style="display:flex; gap:5px; margin-top:10px"><input type="text" id="inp-${p.id}" class="input-box" style="margin:0; flex:1; font-size:0.8rem" placeholder="Reply..."><button class="btn" style="padding:5px 10px" onclick="addReply('${p.id}')">OK</button></div>
+                    <span class="stat" onclick="react('${p.id}', 'hearts')">❤️ ${p.hearts.length}</span>
+                    <span class="stat" onclick="react('${p.id}', 'breaks')">💔 ${p.breaks.length}</span>
                 </div>
             `;
             return div;
         }
 
-        function toggleReplies(id) { const b = document.getElementById('rep-box-' + id); b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
-        function addReply(id) {
-            const inp = document.getElementById('inp-' + id);
-            const p = posts.find(x => x.id == id);
-            p.replies.push({ user: currentUser.user, text: inp.value });
-            save(); renderFeed();
+        function renderFeed() {
+            const c = document.getElementById('feed-items'); c.innerHTML = "";
+            posts.forEach(p => c.appendChild(createPostUI(p)));
         }
 
-        function aiReport(id) {
-            const p = posts.find(x => x.id == id);
-            if (["hate", "mean", "bad"].some(t => p.content.toLowerCase().includes(t))) {
-                alert("AI: Post Removed."); posts = posts.filter(x => x.id != id); save(); renderFeed();
-            } else { alert("AI: Post Clear."); }
+        function openPostModal() { document.getElementById('post-modal').style.display = 'flex'; }
+        function closePostModal() { document.getElementById('post-modal').style.display = 'none'; }
+        function makePost() {
+            const txt = document.getElementById('post-text').value; if(!txt) return;
+            posts.unshift({ id: Date.now(), author: currentUser.user, content: txt, hearts: [], breaks: [] });
+            save(); closePostModal(); renderFeed();
         }
 
         function react(pid, type) {
@@ -170,32 +292,21 @@
             save(); renderFeed();
         }
 
-        function viewProfile(handle) {
-            const u = users[handle]; showScreen('profile-screen');
-            document.getElementById('view-name').innerText = u.name;
-            document.getElementById('view-handle').innerText = "@" + u.user;
-            const container = document.getElementById('view-posts'); container.innerHTML = "";
-            posts.filter(p => p.author === handle).forEach(p => container.appendChild(createPostUI(p)));
-            document.getElementById('profile-actions').innerHTML = (handle === currentUser.user) ? `<button class="btn" style="background:#ef4444" onclick="logout()">Logout</button>` : `<button class="btn" onclick="addFriend('${handle}')">${currentUser.friends.includes(handle)?'Friends ✅':'Add Friend'}</button>`;
-        }
-
-        function addFriend(h) { if(!currentUser.friends.includes(h)) { currentUser.friends.push(h); users[h].friends.push(currentUser.user); save(); viewProfile(h); } }
-        function renderFriends() { const c = document.getElementById('friends-list'); c.innerHTML = ""; currentUser.friends.forEach(f => { c.innerHTML += `<div style="background:var(--surface); padding:10px; border-radius:10px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">@${f} <button class="btn" onclick="viewProfile('${f}')">View</button></div>`; }); }
-        function renderFeed() { const c = document.getElementById('feed-items'); c.innerHTML = ""; posts.forEach(p => c.appendChild(createPostUI(p))); }
-        function openPostModal() { document.getElementById('post-modal').style.display = 'flex'; }
-        function closePostModal() { document.getElementById('post-modal').style.display = 'none'; pendingMedia = null; document.getElementById('post-text').value = ""; }
-        function save() { localStorage.setItem('sgp_users', JSON.stringify(users)); localStorage.setItem('sgp_posts', JSON.stringify(posts)); localStorage.setItem('sgp_session', JSON.stringify(currentUser)); }
-        function doSignup() { 
+        // --- AUTH ---
+        function doSignup() {
             const u = document.getElementById('reg-user').value.toLowerCase().trim();
-            users[u] = { user:u, name:document.getElementById('reg-name').value, pass:document.getElementById('reg-pass').value, friends:[] };
+            const n = document.getElementById('reg-name').value;
+            const p = document.getElementById('reg-pass').value;
+            if(!u || !p) return;
+            users[u] = { user: u, name: n, pass: p, friends: [], following: [], requests: [] };
             currentUser = users[u]; save(); showScreen('feed-screen'); renderFeed();
         }
-        function doLogin() { 
+        function doLogin() {
             const u = document.getElementById('log-user').value.toLowerCase().trim();
-            if(users[u] && users[u].pass === document.getElementById('log-pass').value) { currentUser = users[u]; save(); showScreen('feed-screen'); renderFeed(); } else alert("Error");
+            const p = document.getElementById('log-pass').value;
+            if(users[u] && users[u].pass === p) { currentUser = users[u]; save(); showScreen('feed-screen'); renderFeed(); }
+            else alert("Invalid login");
         }
-        function logout() { localStorage.removeItem('sgp_session'); location.reload(); }
-        function clearAllData() { localStorage.clear(); location.reload(); }
     </script>
 </body>
 </html>
