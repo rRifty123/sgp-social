@@ -88,151 +88,144 @@
             </div>
         </div>
 
-        <div class="nav-bar">
-            <span onclick="showScreen('feed-screen')">🏠</span>
-            <span onclick="showScreen('friends-screen')">💬</span>
-            <span onclick="openPostModal()" style="font-size:1.5rem; color:var(--accent)">+</span>
-            <span onclick="viewProfile(currentUser.user)">👤</span>
-        </div>
+        <nav class="nav-bar">
+            <span onclick="showScreen('feed-screen')" style="cursor:pointer; font-size: 1.5rem;">🏠</span>
+            <span onclick="showScreen('friends-screen')" style="cursor:pointer; font-size: 1.5rem;">👥</span>
+            <span onclick="openPostModal()" style="cursor:pointer; font-size: 2.5rem; color: var(--accent); font-weight: bold;">+</span>
+            <span onclick="viewProfile(currentUser.user)" style="cursor:pointer; font-size: 1.5rem;">👤</span>
+        </nav>
+    </div> <div id="post-modal">
+        <h2 style="margin-bottom:15px">New Post</h2>
+        <textarea id="post-text" class="input-box" style="height: 150px; width: 100%;" placeholder="What's happening?"></textarea>
+        
+        <input type="file" id="media-input" accept="image/*" style="display:none" onchange="previewFile(this)">
+        <button class="btn" style="background:#475569; width: 100%" onclick="document.getElementById('media-input').click()">📷 Add Media</button>
+        <p id="file-status" style="font-size:0.7rem; color:var(--accent); text-align:center; margin: 10px 0;"></p>
+        
+        <button class="btn" style="width: 100%" onclick="makePost()">Post</button>
+        <button class="btn" style="background: transparent; width: 100%" onclick="closePostModal()">Cancel</button>
     </div>
 
-    <div id="post-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9000; display:none; flex-direction:column; padding:20px;">
-        <h2>New Post</h2>
-        <textarea id="post-text" placeholder="Speak your mind..." style="width:100%; height:150px; background:var(--surface); color:white; padding:12px; border:none; margin:15px 0; border-radius:10px;"></textarea>
-        <button class="btn" style="background:var(--accent)" onclick="makePost()">Post</button>
-        <button class="btn" style="background:transparent" onclick="closePostModal()">Cancel</button>
-    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <script>
-      <script type="module">
-  // 1. Import Firebase Engines (CDN Version for GitHub)
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
+            authDomain: "sgp-social.firebaseapp.com",
+            projectId: "sgp-social",
+            storageBucket: "sgp-social.firebasestorage.app",
+            messagingSenderId: "886036235471",
+            appId: "1:886036235471:web:4bc1421cdc95da504ae3ba"
+        };
 
-  // 2. Your SGP Config (Already plugged in!)
-  const firebaseConfig = {
-    apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
-    authDomain: "sgp-social.firebaseapp.com",
-    projectId: "sgp-social",
-    storageBucket: "sgp-social.firebasestorage.app",
-    messagingSenderId: "886036235471",
-    appId: "1:886036235471:web:4bc1421cdc95da504ae3ba"
-  };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-  // 3. Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+        let currentUser = JSON.parse(localStorage.getItem('sgp_session')) || null;
+        let allUsers = {};
+        let allPosts = [];
+        let pendingMedia = null;
 
-  // Global variables to keep the app running smooth
-  let currentUser = JSON.parse(localStorage.getItem('sgp_session')) || null;
-  let allUsers = {};
-  let allPosts = [];
+        // --- HELPER FUNCTIONS ---
+        window.previewFile = (input) => {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    pendingMedia = e.target.result;
+                    document.getElementById('file-status').innerText = "Image attached! ✅";
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
 
-  // --- AUTH LOGIC ---
-  window.doSignup = async () => {
-    const u = document.getElementById('reg-user').value.toLowerCase().trim();
-    const n = document.getElementById('reg-name').value;
-    const p = document.getElementById('reg-pass').value;
-    if(!u || !p) return alert("Fill in details");
+        window.showScreen = (id) => {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(id);
+            if(target) target.classList.add('active');
+        };
 
-    const userRef = doc(db, "users", u);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) return alert("Username taken!");
+        window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
+        window.closePostModal = () => {
+            document.getElementById('post-modal').style.display = 'none';
+            pendingMedia = null;
+            document.getElementById('file-status').innerText = "";
+            document.getElementById('post-text').value = "";
+        };
 
-    const userData = { user: u, name: n, pass: p, friends: [], following: [], requests: [] };
-    await setDoc(userRef, userData);
-    localStorage.setItem('sgp_session', JSON.stringify(userData));
-    location.reload();
-  };
+        // --- FIREBASE ACTIONS ---
+        window.doSignup = async () => {
+            const u = document.getElementById('reg-user').value.toLowerCase().trim();
+            const n = document.getElementById('reg-name').value;
+            const p = document.getElementById('reg-pass').value;
+            if(!u || !p) return alert("Please fill in all fields");
+            
+            const userRef = doc(db, "users", u);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) return alert("Username already exists!");
 
-  window.doLogin = async () => {
-    const u = document.getElementById('log-user').value.toLowerCase().trim();
-    const p = document.getElementById('log-pass').value;
-    const userSnap = await getDoc(doc(db, "users", u));
+            const userData = { user: u, name: n, pass: p, friends: [], following: [], requests: [] };
+            await setDoc(userRef, userData);
+            localStorage.setItem('sgp_session', JSON.stringify(userData));
+            location.reload();
+        };
 
-    if (userSnap.exists() && userSnap.data().pass === p) {
-      localStorage.setItem('sgp_session', JSON.stringify(userSnap.data()));
-      location.reload();
-    } else { alert("Login failed!"); }
-  };
+        window.doLogin = async () => {
+            const u = document.getElementById('log-user').value.toLowerCase().trim();
+            const p = document.getElementById('log-pass').value;
+            const userSnap = await getDoc(doc(db, "users", u));
+            if (userSnap.exists() && userSnap.data().pass === p) {
+                localStorage.setItem('sgp_session', JSON.stringify(userSnap.data()));
+                location.reload();
+            } else { alert("Incorrect username or password"); }
+        };
 
-  // --- REAL-TIME DATA ---
-  const qPosts = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-  onSnapshot(qPosts, (snapshot) => {
-    allPosts = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-    renderFeed();
-  });
+        window.makePost = async () => {
+            const t = document.getElementById('post-text').value;
+            if(!t && !pendingMedia) return;
+            
+            await addDoc(collection(db, "posts"), {
+                author: currentUser.user,
+                content: t,
+                media: pendingMedia,
+                createdAt: serverTimestamp()
+            });
+            closePostModal();
+        };
 
-  onSnapshot(collection(db, "users"), (snapshot) => {
-    snapshot.forEach(doc => { allUsers[doc.id] = doc.data(); });
-    if(currentUser && allUsers[currentUser.user]) {
-      currentUser = allUsers[currentUser.user];
-      localStorage.setItem('sgp_session', JSON.stringify(currentUser));
-    }
-  });
+        // --- REAL-TIME SYNC ---
+        onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snapshot) => {
+            allPosts = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+            const c = document.getElementById('feed-items');
+            if(c) {
+                c.innerHTML = allPosts.map(p => `
+                    <div class="post" style="background:var(--surface); padding:15px; margin-bottom:10px; border-radius:12px;">
+                        <strong style="color:var(--primary)" onclick="viewProfile('${p.author}')">@${p.author}</strong>
+                        <p style="margin:10px 0">${p.content}</p>
+                        ${p.media ? `<img src="${p.media}" style="width:100%; border-radius:10px; margin-top:10px;">` : ''}
+                    </div>
+                `).join('');
+            }
+        });
 
-  // --- UI ACTIONS ---
-  window.launch = (device) => {
-    document.getElementById('selector-layer').remove();
-    const app = document.getElementById('app-container');
-    app.className = device; app.style.display = 'block';
-    if (!currentUser) showScreen('signup-screen');
-  };
+        onSnapshot(collection(db, "users"), (snapshot) => {
+            snapshot.forEach(doc => { allUsers[doc.id] = doc.data(); });
+        });
 
-  window.showScreen = (id) => {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  };
+        window.viewProfile = (handle) => {
+            const u = allUsers[handle];
+            if(!u) return;
+            showScreen('profile-screen');
+            document.getElementById('view-name').innerText = u.name;
+            document.getElementById('view-handle').innerText = "@" + u.user;
+            const actions = document.getElementById('profile-actions');
+            actions.innerHTML = (handle === currentUser.user) 
+                ? `<button class="btn" style="background:#ef4444" onclick="localStorage.clear(); location.reload();">Logout</button>`
+                : `<button class="btn" onclick="alert('Social features syncing...')">Follow</button>`;
+        };
 
-  window.makePost = async () => {
-    const t = document.getElementById('post-text').value;
-    if(!t || !currentUser) return;
-    await addDoc(collection(db, "posts"), {
-      author: currentUser.user,
-      content: t,
-      hearts: [],
-      createdAt: serverTimestamp()
-    });
-    document.getElementById('post-text').value = "";
-    document.getElementById('post-modal').style.display = 'none';
-  };
-
-  window.renderFeed = () => {
-    const c = document.getElementById('feed-items');
-    if(!c) return;
-    c.innerHTML = allPosts.map(p => `
-      <div class="post" style="background:#1e293b; padding:15px; margin-bottom:1px; border-bottom:1px solid #334155;">
-        <strong style="color:#6366f1; cursor:pointer;" onclick="viewProfile('${p.author}')">@${p.author}</strong>
-        <p style="margin:10px 0; color:white;">${p.content}</p>
-      </div>
-    `).join('');
-  };
-
-  window.viewProfile = (handle) => {
-    const u = allUsers[handle];
-    if(!u) return;
-    showScreen('profile-screen');
-    document.getElementById('view-name').innerText = u.name;
-    document.getElementById('view-handle').innerText = "@" + u.user;
-    
-    const actions = document.getElementById('profile-actions');
-    if(handle !== currentUser.user) {
-        actions.innerHTML = `<button class="btn" onclick="alert('Connection pending database rules!')">Add Friend</button>`;
-    } else {
-        actions.innerHTML = `<button class="btn" style="background:#ef4444" onclick="localStorage.clear(); location.reload();">Logout</button>`;
-    }
-  };
-
-  window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
-  window.closePostModal = () => document.getElementById('post-modal').style.display = 'none';
-
-  // Initial Check
-  if(currentUser) {
-    showScreen('feed-screen');
-    renderFeed();
-  }
-</script>
-</script>
-    
+        // Start App
+        if(currentUser) { showScreen('feed-screen'); } else { showScreen('signup-screen'); }
+    </script>
 </body>
 </html>
