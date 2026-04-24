@@ -15,14 +15,21 @@
         .screen { flex: 1; overflow-y: auto; display: none; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
         .active { display: flex !important; flex-direction: column; }
 
+        /* Shorts Specific Styling */
+        #shorts-container { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; background: #000; }
+        .short-video-wrapper { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; }
+        
         .btn { padding: 15px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; background: var(--primary); color: white; margin: 5px; font-size: 16px; width: 90%; align-self: center; }
         .input-box { width: 90%; padding: 14px; margin: 8px auto; background: var(--surface); border: 1px solid #334155; color: white; border-radius: 12px; display: block; font-size: 16px; }
         
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #334155; padding-bottom: 20px; z-index: 1000; }
-        .nav-item { font-size: 1.6rem; padding: 10px; cursor: pointer; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #334155; padding-bottom: 20px; z-index: 1000; }
+        .nav-item { font-size: 1.5rem; cursor: pointer; opacity: 0.8; }
+        .nav-item:active { transform: scale(0.9); opacity: 1; }
 
-        .post { background: var(--surface); margin-bottom: 1px; padding: 15px; border-bottom: 1px solid #334155; }
-        #post-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 20px; padding-top: 60px; }
+        .post { background: var(--surface); margin-bottom: 8px; padding: 15px; border-radius: 12px; width: 95%; align-self: center; }
+        #post-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 20px; padding-top: 60px; overflow-y: auto; }
+        
+        .reply-box { border-left: 2px solid var(--primary); padding-left: 10px; margin: 10px 0; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -30,7 +37,7 @@
     <div id="app-container">
         <div id="signup-screen" class="screen">
             <div style="margin:auto; width:100%; text-align:center;">
-                <h1>SGP</h1>
+                <h1 style="font-size: 3rem; margin-bottom: 10px;">SGP</h1>
                 <input type="text" id="reg-user" class="input-box" placeholder="Username">
                 <input type="text" id="reg-name" class="input-box" placeholder="Name">
                 <input type="password" id="reg-pass" class="input-box" placeholder="Password">
@@ -50,38 +57,49 @@
 
         <div id="feed-screen" class="screen">
             <div style="padding: 20px; padding-top: 40px;"><h2>Feed</h2></div>
-            <div id="feed-items"></div>
+            <div id="feed-items" style="display: flex; flex-direction: column;"></div>
+        </div>
+
+        <div id="shorts-screen" class="screen" style="background: #000; padding-bottom: 0;">
+            <div id="shorts-container"></div>
         </div>
 
         <div id="friends-screen" class="screen">
-            <div style="padding: 20px; padding-top: 40px;"><h2>Friends</h2></div>
+            <div style="padding: 20px; padding-top: 40px;"><h2>Social</h2></div>
             <div id="friends-list" style="padding: 10px;"></div>
         </div>
 
         <div id="profile-screen" class="screen">
             <div id="profile-header" style="text-align: center; padding: 40px 20px; background: var(--surface);">
+                <div style="width:80px; height:80px; background:var(--primary); border-radius:50%; margin: 0 auto 15px;"></div>
                 <h2 id="view-name">Name</h2>
                 <p id="view-handle" style="color: var(--text-dim)">@user</p>
                 <div id="profile-actions" style="margin-top: 20px;"></div>
             </div>
-            <div id="view-posts"></div>
         </div>
 
         <nav class="nav-bar">
             <div class="nav-item" onclick="window.showScreen('feed-screen')">🏠</div>
+            <div class="nav-item" onclick="window.showScreen('shorts-screen')">🎬</div>
+            <div class="nav-item" onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2.2rem;">+</div>
             <div class="nav-item" onclick="window.showScreen('friends-screen')">👥</div>
-            <div class="nav-item" onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2rem;">+</div>
             <div class="nav-item" onclick="window.viewProfile(window.currentUser.user)">👤</div>
         </nav>
     </div>
 
     <div id="post-modal">
-        <h2>New Post</h2>
-        <textarea id="post-text" class="input-box" style="height: 150px;" placeholder="What's happening?"></textarea>
+        <h2>Create</h2>
+        <textarea id="post-text" class="input-box" style="height: 120px;" placeholder="What's on your mind?"></textarea>
+        
         <input type="file" id="media-input" accept="image/*" style="display:none" onchange="window.previewFile(this)">
-        <button class="btn" style="background:#475569" onclick="document.getElementById('media-input').click()">📷 Add Media</button>
+        <button class="btn" style="background:#475569" onclick="document.getElementById('media-input').click()">📷 Add Photo</button>
+        
+        <input type="file" id="video-input" accept="video/*" style="display:none" onchange="window.previewVideo(this)">
+        <button class="btn" style="background:#475569" onclick="document.getElementById('video-input').click()">🎥 Add Short (Video)</button>
+        
         <p id="file-status" style="text-align:center; margin:10px; font-size:12px; color:var(--accent)"></p>
-        <button class="btn" onclick="window.makePost()">Post</button>
+        
+        <button id="post-btn" class="btn" onclick="window.makePost()">Post</button>
         <button class="btn" style="background:transparent" onclick="window.closePostModal()">Cancel</button>
     </div>
 
@@ -89,7 +107,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
             authDomain: "sgp-social.firebaseapp.com",
@@ -106,33 +123,37 @@
         let allUsers = {};
         let allPosts = [];
         let pendingMedia = null;
+        let mediaType = 'text';
 
-        // --- NAVIGATION ---
+        // --- SCREEN CONTROL ---
         window.showScreen = (id) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            const screen = document.getElementById(id);
-            if(screen) screen.classList.add('active');
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('video').forEach(v => v.pause());
             if(id === 'friends-screen') renderFriendsList();
         };
 
-        // --- MEDIA FIX ---
-        window.previewFile = (input) => {
+        // --- FILE HANDLING ---
+        window.previewFile = (input) => { mediaType = 'image'; handleFile(input); };
+        window.previewVideo = (input) => { mediaType = 'video'; handleFile(input); };
+        
+        function handleFile(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     pendingMedia = e.target.result;
-                    document.getElementById('file-status').innerText = "Image Ready! 📸";
+                    document.getElementById('file-status').innerText = mediaType === 'video' ? "Video Ready! 🎬" : "Photo Ready! 📸";
                 };
                 reader.readAsDataURL(input.files[0]);
             }
-        };
+        }
 
         // --- AUTH ---
         window.doSignup = async () => {
             const u = document.getElementById('reg-user').value.toLowerCase().trim();
             const n = document.getElementById('reg-name').value;
             const p = document.getElementById('reg-pass').value;
-            if(!u || !p) return alert("Fill in details");
+            if(!u || !p) return alert("Missing fields");
             const userRef = doc(db, "users", u);
             const userData = { user: u, name: n, pass: p, friends: [], following: [], requests: [] };
             await setDoc(userRef, userData);
@@ -152,106 +173,97 @@
             } else { alert("Login failed"); }
         };
 
-        // --- POSTING (STABILITY FIX) ---
+        // --- POSTING ---
         window.makePost = async () => {
             const t = document.getElementById('post-text').value;
-            if(!t && !pendingMedia) return alert("Add text or an image!");
+            if(!t && !pendingMedia) return alert("Empty post!");
+            const btn = document.getElementById('post-btn');
+            btn.innerText = "Posting..."; btn.disabled = true;
 
-            try {
-                // Post to Firebase
-                await addDoc(collection(db, "posts"), {
-                    author: window.currentUser.user,
-                    content: t || "",
-                    media: pendingMedia || null,
-                    hearts: [],
-                    breaks: [],
-                    replies: [],
-                    createdAt: serverTimestamp()
-                });
-                
-                // Reset UI
-                window.closePostModal();
-            } catch (e) {
-                console.error(e);
-                alert("Post failed. Try again.");
-            }
+            await addDoc(collection(db, "posts"), {
+                author: window.currentUser.user,
+                content: t,
+                media: pendingMedia,
+                type: mediaType,
+                hearts: [],
+                breaks: [],
+                replies: [],
+                createdAt: serverTimestamp()
+            });
+            window.closePostModal();
+            btn.innerText = "Post"; btn.disabled = false;
         };
 
+        // --- REPLIES & REACTIONS ---
         window.addReply = async (postId) => {
-            const replyInput = document.getElementById(`reply-to-${postId}`);
-            if (!replyInput.value) return;
-            const postRef = doc(db, "posts", postId);
-            await updateDoc(postRef, {
-                replies: arrayUnion({
-                    author: window.currentUser.user,
-                    text: replyInput.value,
-                    at: Date.now()
-                })
+            const input = document.getElementById(`reply-to-${postId}`);
+            if(!input.value) return;
+            await updateDoc(doc(db, "posts", postId), {
+                replies: arrayUnion({ author: window.currentUser.user, text: input.value, at: Date.now() })
             });
-            replyInput.value = "";
+            input.value = "";
         };
 
         window.react = async (postId, type) => {
             const postRef = doc(db, "posts", postId);
             const post = allPosts.find(p => p.id === postId);
-            const user = window.currentUser.user;
-            if (post[type]?.includes(user)) {
-                await updateDoc(postRef, { [type]: arrayRemove(user) });
-            } else {
-                await updateDoc(postRef, { [type]: arrayUnion(user) });
-            }
+            const isSet = post[type]?.includes(window.currentUser.user);
+            await updateDoc(postRef, { [type]: isSet ? arrayRemove(window.currentUser.user) : arrayUnion(window.currentUser.user) });
         };
 
-        // --- MESSAGING ---
-        window.openChat = (friendHandle) => {
-            const chatId = [window.currentUser.user, friendHandle].sort().join('_');
-            const msgText = prompt(`Message @${friendHandle}:`);
-            if(!msgText) return;
-            addDoc(collection(db, "messages"), {
-                chatId: chatId,
-                from: window.currentUser.user,
-                text: msgText,
-                at: serverTimestamp()
-            });
-            alert("Message Sent!");
+        // --- MESSAGING & SOCIAL ---
+        window.openChat = (handle) => {
+            const msg = prompt(`Message @${handle}:`);
+            if(!msg) return;
+            const chatId = [window.currentUser.user, handle].sort().join('_');
+            addDoc(collection(db, "messages"), { chatId, from: window.currentUser.user, text: msg, at: serverTimestamp() });
+            alert("Sent!");
         };
 
-        // --- SOCIAL ---
-        window.toggleFollow = async (targetUser) => {
-            const myRef = doc(db, "users", window.currentUser.user);
-            const isFollowing = window.currentUser.following?.includes(targetUser);
-            await updateDoc(myRef, { following: isFollowing ? arrayRemove(targetUser) : arrayUnion(targetUser) });
+        window.sendRequest = async (handle) => {
+            await updateDoc(doc(db, "users", handle), { requests: arrayUnion(window.currentUser.user) });
+            alert("Request Sent!");
         };
 
-        window.sendRequest = async (targetUser) => {
-            await updateDoc(doc(db, "users", targetUser), { requests: arrayUnion(window.currentUser.user) });
-            alert("Friend Request Sent!");
+        window.acceptFriend = async (handle) => {
+            await updateDoc(doc(db, "users", window.currentUser.user), { friends: arrayUnion(handle), requests: arrayRemove(handle) });
+            await updateDoc(doc(db, "users", handle), { friends: arrayUnion(window.currentUser.user) });
         };
 
-        window.acceptFriend = async (targetUser) => {
-            await updateDoc(doc(db, "users", window.currentUser.user), { friends: arrayUnion(targetUser), requests: arrayRemove(targetUser) });
-            await updateDoc(doc(db, "users", targetUser), { friends: arrayUnion(window.currentUser.user) });
-        };
-
-        // --- UI RENDERING ---
+        // --- RENDERING ---
         window.renderFeed = () => {
             const feed = document.getElementById('feed-items');
-            if(!feed) return;
-            feed.innerHTML = allPosts.map(p => `
+            feed.innerHTML = allPosts.filter(p => p.type !== 'video').map(p => `
                 <div class="post">
                     <strong onclick="window.viewProfile('${p.author}')" style="color:var(--primary)">@${p.author}</strong>
                     <p style="margin:10px 0">${p.content || ""}</p>
                     ${p.media ? `<img src="${p.media}" style="width:100%; border-radius:10px; margin-bottom:10px;">` : ""}
-                    <div style="display:flex; gap:15px; margin-bottom:15px; font-size:0.8rem;">
+                    <div style="display:flex; gap:15px; margin-bottom:10px;">
                         <span onclick="window.react('${p.id}', 'hearts')">❤️ ${p.hearts?.length || 0}</span>
                         <span onclick="window.react('${p.id}', 'breaks')">💔 ${p.breaks?.length || 0}</span>
                     </div>
-                    <div class="replies" style="border-left:2px solid #334155; padding-left:10px; margin-bottom:10px;">
-                        ${(p.replies || []).map(r => `<p style="font-size:0.8rem; margin:4px 0"><b>@${r.author}:</b> ${r.text}</p>`).join('')}
+                    <div class="replies">
+                        ${(p.replies || []).map(r => `<div class="reply-box"><b>@${r.author}:</b> ${r.text}</div>`).join('')}
                     </div>
                     <div style="display:flex; gap:5px;">
-                        <input id="reply-to-${p.id}" class="input-box" style="margin:0; height:35px; font-size:0.8rem;" placeholder="Reply...">
-                        <button class="btn" style="width:60px; padding:0; height:35px;" onclick="window.addReply('${p.id}')">Send</button>
+                        <input id="reply-to-${p.id}" class="input-box" style="margin:0; height:40px;" placeholder="Reply...">
+                        <button class="btn" style="width:70px; height:40px; padding:0" onclick="window.addReply('${p.id}')">Send</button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.renderShorts = () => {
+            const container = document.getElementById('shorts-container');
+            container.innerHTML = allPosts.filter(p => p.type === 'video').map(p => `
+                <div class="short-video-wrapper">
+                    <video src="${p.media}" loop style="height:100%; width:100%; object-fit:cover;" onclick="this.paused ? this.play() : this.pause()"></video>
+                    <div style="position:absolute; bottom:120px; left:20px; text-shadow:0 2px 4px #000;">
+                        <strong onclick="window.viewProfile('${p.author}')" style="font-size:1.2rem">@${p.author}</strong>
+                        <p>${p.content}</p>
+                    </div>
+                    <div style="position:absolute; right:15px; bottom:150px; text-align:center;">
+                        <div onclick="window.react('${p.id}', 'hearts')" style="font-size:2rem">❤️<br><small style="font-size:12px">${p.hearts?.length || 0}</small></div>
                     </div>
                 </div>
             `).join('');
@@ -260,39 +272,30 @@
         window.viewProfile = (handle) => {
             const u = allUsers[handle];
             if(!u) return;
+            window.showScreen('profile-screen');
             document.getElementById('view-name').innerText = u.name;
             document.getElementById('view-handle').innerText = "@" + u.user;
-            let btns = "";
-            if(handle === window.currentUser.user) {
-                btns = `<button class="btn" style="background:#ef4444" onclick="localStorage.clear(); location.reload();">Logout</button>`;
-            } else {
-                const isFriend = window.currentUser.friends?.includes(handle);
-                const isFollowing = window.currentUser.following?.includes(handle);
-                btns += `<button class="btn" onclick="window.toggleFollow('${handle}')">${isFollowing ? 'Unfollow' : 'Follow'}</button>`;
-                if(!isFriend) btns += `<button class="btn" onclick="window.sendRequest('${handle}')">Add Friend</button>`;
-                else btns += `<button class="btn" style="background:#22c55e" onclick="window.openChat('${handle}')">Message</button>`;
-            }
-            document.getElementById('profile-actions').innerHTML = btns;
-            window.showScreen('profile-screen');
+            const isMe = handle === window.currentUser.user;
+            const isFriend = window.currentUser.friends?.includes(handle);
+            document.getElementById('profile-actions').innerHTML = isMe ? 
+                `<button class="btn" style="background:#ef4444" onclick="localStorage.clear(); location.reload();">Logout</button>` : 
+                (isFriend ? `<button class="btn" style="background:#22c55e" onclick="window.openChat('${handle}')">Message</button>` : `<button class="btn" onclick="window.sendRequest('${handle}')">Add Friend</button>`);
         };
 
         function renderFriendsList() {
             const list = document.getElementById('friends-list');
-            let html = "<h4>Requests</h4>";
-            (window.currentUser.requests || []).forEach(r => {
-                html += `<div class="post" style="display:flex; justify-content:space-between; align-items:center;">@${r} <button class="btn" style="width:80px" onclick="window.acceptFriend('${r}')">Accept</button></div>`;
-            });
-            html += "<h4 style='margin-top:20px'>Friends</h4>";
-            (window.currentUser.friends || []).forEach(f => {
-                html += `<div class="post" style="display:flex; justify-content:space-between; align-items:center;">@${f} <button class="btn" style="width:80px; background:#22c55e" onclick="window.openChat('${f}')">Chat</button></div>`;
-            });
-            list.innerHTML = html;
+            let h = "<h4>Requests</h4>";
+            (window.currentUser.requests || []).forEach(r => h += `<div class="post" style="display:flex; justify-content:space-between; align-items:center;">@${r} <button class="btn" style="width:80px" onclick="window.acceptFriend('${r}')">Accept</button></div>`);
+            h += "<h4 style='margin-top:20px'>Friends</h4>";
+            (window.currentUser.friends || []).forEach(f => h += `<div class="post" style="display:flex; justify-content:space-between; align-items:center;">@${f} <button class="btn" style="width:80px; background:#22c55e" onclick="window.openChat('${f}')">Chat</button></div>`);
+            list.innerHTML = h;
         }
 
-        // --- REAL-TIME DATA ---
+        // --- LISTENERS ---
         onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snap) => {
             allPosts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             window.renderFeed();
+            window.renderShorts();
         });
 
         onSnapshot(collection(db, "users"), (snap) => {
@@ -308,12 +311,12 @@
         window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
         window.closePostModal = () => {
             document.getElementById('post-modal').style.display = 'none';
-            pendingMedia = null;
+            pendingMedia = null; mediaType = 'text';
             document.getElementById('file-status').innerText = "";
             document.getElementById('post-text').value = "";
         };
 
-        if(window.currentUser) { window.showScreen('feed-screen'); } else { window.showScreen('signup-screen'); }
+        if(window.currentUser) window.showScreen('feed-screen'); else window.showScreen('signup-screen');
     </script>
 </body>
 </html>
