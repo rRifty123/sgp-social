@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SGP Social">
     <title>SGP Social</title>
     <style>
         :root { --primary: #6366f1; --accent: #ec4899; --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-dim: #94a3b8; }
@@ -15,26 +16,23 @@
         .screen { flex: 1; overflow-y: auto; display: none; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
         .active { display: flex !important; flex-direction: column; }
 
-        /* Shorts Specific Styling */
-        #shorts-container { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; background: #000; }
-        .short-video-wrapper { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; }
-        
         .btn { padding: 15px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; background: var(--primary); color: white; margin: 5px; font-size: 16px; width: 90%; align-self: center; }
         .input-box { width: 90%; padding: 14px; margin: 8px auto; background: var(--surface); border: 1px solid #334155; color: white; border-radius: 12px; display: block; font-size: 16px; }
         
         .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #334155; padding-bottom: 20px; z-index: 1000; }
         .nav-item { font-size: 1.5rem; cursor: pointer; opacity: 0.8; }
-        .nav-item:active { transform: scale(0.9); opacity: 1; }
 
         .post { background: var(--surface); margin-bottom: 8px; padding: 15px; border-radius: 12px; width: 95%; align-self: center; }
         #post-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 20px; padding-top: 60px; overflow-y: auto; }
         
+        .short-card { min-width: 150px; height: 250px; background: #000; border-radius: 15px; overflow: hidden; flex-shrink: 0; scroll-snap-align: start; position: relative; }
         .reply-box { border-left: 2px solid var(--primary); padding-left: 10px; margin: 10px 0; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
+        <!-- Auth -->
         <div id="signup-screen" class="screen">
             <div style="margin:auto; width:100%; text-align:center;">
                 <h1 style="font-size: 3rem; margin-bottom: 10px;">SGP</h1>
@@ -55,20 +53,24 @@
             </div>
         </div>
 
+        <!-- Main Feed -->
         <div id="feed-screen" class="screen">
             <div style="padding: 20px; padding-top: 40px;"><h2>Feed</h2></div>
             <div id="feed-items" style="display: flex; flex-direction: column;"></div>
         </div>
 
-        <div id="shorts-screen" class="screen" style="background: #000; padding-bottom: 0;">
-            <div id="shorts-container"></div>
+        <!-- Video Hub Screen -->
+        <div id="video-hub-screen" class="screen">
+            <div id="video-hub-container"></div>
         </div>
 
+        <!-- Social Screen -->
         <div id="friends-screen" class="screen">
             <div style="padding: 20px; padding-top: 40px;"><h2>Social</h2></div>
             <div id="friends-list" style="padding: 10px;"></div>
         </div>
 
+        <!-- Profile Screen -->
         <div id="profile-screen" class="screen">
             <div id="profile-header" style="text-align: center; padding: 40px 20px; background: var(--surface);">
                 <div style="width:80px; height:80px; background:var(--primary); border-radius:50%; margin: 0 auto 15px;"></div>
@@ -78,24 +80,26 @@
             </div>
         </div>
 
+        <!-- Nav -->
         <nav class="nav-bar">
             <div class="nav-item" onclick="window.showScreen('feed-screen')">🏠</div>
-            <div class="nav-item" onclick="window.showScreen('shorts-screen')">🎬</div>
+            <div class="nav-item" onclick="window.showScreen('video-hub-screen')">🎬</div>
             <div class="nav-item" onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2.2rem;">+</div>
             <div class="nav-item" onclick="window.showScreen('friends-screen')">👥</div>
             <div class="nav-item" onclick="window.viewProfile(window.currentUser.user)">👤</div>
         </nav>
     </div>
 
+    <!-- Create Post Modal -->
     <div id="post-modal">
         <h2>Create</h2>
-        <textarea id="post-text" class="input-box" style="height: 120px;" placeholder="What's on your mind?"></textarea>
+        <textarea id="post-text" class="input-box" style="height: 120px;" placeholder="Say something..."></textarea>
         
         <input type="file" id="media-input" accept="image/*" style="display:none" onchange="window.previewFile(this)">
         <button class="btn" style="background:#475569" onclick="document.getElementById('media-input').click()">📷 Add Photo</button>
         
         <input type="file" id="video-input" accept="video/*" style="display:none" onchange="window.previewVideo(this)">
-        <button class="btn" style="background:#475569" onclick="document.getElementById('video-input').click()">🎥 Add Short (Video)</button>
+        <button class="btn" style="background:#475569" onclick="document.getElementById('video-input').click()">🎥 Add Video (Max 60s)</button>
         
         <p id="file-status" style="text-align:center; margin:10px; font-size:12px; color:var(--accent)"></p>
         
@@ -125,37 +129,126 @@
         let pendingMedia = null;
         let mediaType = 'text';
 
-        // --- SCREEN CONTROL ---
+        // --- NAVIGATION ---
         window.showScreen = (id) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            const screen = document.getElementById(id);
+            if(screen) screen.classList.add('active');
             document.querySelectorAll('video').forEach(v => v.pause());
             if(id === 'friends-screen') renderFriendsList();
         };
 
-        // --- FILE HANDLING ---
+        // --- FILE PICKING ---
         window.previewFile = (input) => { mediaType = 'image'; handleFile(input); };
-        window.previewVideo = (input) => { mediaType = 'video'; handleFile(input); };
+        window.previewVideo = (input) => {
+            if (!input.files[0]) return;
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.onloadedmetadata = () => {
+                window.URL.revokeObjectURL(video.src);
+                if (video.duration > 61) {
+                    alert("Video too long (Max 60s)");
+                    input.value = "";
+                    return;
+                }
+                mediaType = 'video';
+                handleFile(input);
+            };
+            video.src = URL.createObjectURL(input.files[0]);
+        };
         
         function handleFile(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    pendingMedia = e.target.result;
-                    document.getElementById('file-status').innerText = mediaType === 'video' ? "Video Ready! 🎬" : "Photo Ready! 📸";
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                pendingMedia = e.target.result;
+                document.getElementById('file-status').innerText = "Media Prepared! ✅";
+            };
+            reader.readAsDataURL(input.files[0]);
         }
 
-        // --- AUTH ---
+        // --- CORE ACTIONS ---
+        window.makePost = async () => {
+            const t = document.getElementById('post-text').value;
+            if(!t && !pendingMedia) return;
+            const btn = document.getElementById('post-btn');
+            btn.innerText = "Uploading..."; btn.disabled = true;
+            try {
+                await addDoc(collection(db, "posts"), {
+                    author: window.currentUser.user,
+                    content: t, media: pendingMedia, type: mediaType,
+                    hearts: [], breaks: [], replies: [], createdAt: serverTimestamp()
+                });
+                window.closePostModal();
+            } catch(e) { alert("File too large for cloud storage."); }
+            btn.innerText = "Post"; btn.disabled = false;
+        };
+
+        window.react = async (postId, type) => {
+            const postRef = doc(db, "posts", postId);
+            const post = allPosts.find(p => p.id === postId);
+            const isSet = post[type]?.includes(window.currentUser.user);
+            await updateDoc(postRef, { [type]: isSet ? arrayRemove(window.currentUser.user) : arrayUnion(window.currentUser.user) });
+        };
+
+        window.addReply = async (postId) => {
+            const input = document.getElementById(`reply-to-${postId}`);
+            if(!input.value) return;
+            await updateDoc(doc(db, "posts", postId), {
+                replies: arrayUnion({ author: window.currentUser.user, text: input.value, at: Date.now() })
+            });
+            input.value = "";
+        };
+
+        // --- RENDERING ---
+        window.renderFeed = () => {
+            const feed = document.getElementById('feed-items');
+            feed.innerHTML = allPosts.filter(p => p.type !== 'video').map(p => `
+                <div class="post">
+                    <strong onclick="window.viewProfile('${p.author}')">@${p.author}</strong>
+                    <p style="margin:10px 0">${p.content}</p>
+                    ${p.media ? `<img src="${p.media}" style="width:100%; border-radius:10px;">` : ""}
+                    <div style="margin-top:10px;">
+                        <span onclick="window.react('${p.id}', 'hearts')">❤️ ${p.hearts?.length || 0}</span>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.renderVideoHub = () => {
+            const container = document.getElementById('video-hub-container');
+            const videos = allPosts.filter(p => p.type === 'video');
+            const shorts = videos.slice(0, 6);
+            const normal = videos.slice(6);
+
+            container.innerHTML = `
+                <div style="padding: 40px 20px 10px;"><h2>Video Hub</h2></div>
+                <div style="display: flex; overflow-x: auto; gap: 10px; padding: 15px; scroll-snap-type: x mandatory;">
+                    ${shorts.map(p => `
+                        <div class="short-card">
+                            <video src="${p.media}" loop playsinline style="width:100%; height:100%; object-fit:cover;" onclick="this.paused ? this.play() : this.pause()"></video>
+                            <div style="position:absolute; bottom:5px; left:10px; font-size:0.8rem;">@${p.author}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="padding: 10px 20px;"><h3>Feed Videos</h3></div>
+                ${normal.map(p => `
+                    <div class="post">
+                        <strong onclick="window.viewProfile('${p.author}')">@${p.author}</strong>
+                        <p>${p.content}</p>
+                        <video src="${p.media}" controls playsinline style="width:100%; border-radius:10px; background:#000; margin:10px 0;"></video>
+                        <div onclick="window.react('${p.id}', 'hearts')">❤️ ${p.hearts?.length || 0}</div>
+                    </div>
+                `).join('')}
+            `;
+        };
+
+        // --- SOCIAL & AUTH ---
         window.doSignup = async () => {
             const u = document.getElementById('reg-user').value.toLowerCase().trim();
             const n = document.getElementById('reg-name').value;
             const p = document.getElementById('reg-pass').value;
-            if(!u || !p) return alert("Missing fields");
             const userRef = doc(db, "users", u);
-            const userData = { user: u, name: n, pass: p, friends: [], following: [], requests: [] };
+            const userData = { user: u, name: n, pass: p, friends: [], requests: [] };
             await setDoc(userRef, userData);
             window.currentUser = userData;
             localStorage.setItem('sgp_session', JSON.stringify(userData));
@@ -170,138 +263,36 @@
                 window.currentUser = snap.data();
                 localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
                 location.reload();
-            } else { alert("Login failed"); }
+            }
         };
 
-        // --- POSTING ---
-        window.makePost = async () => {
-            const t = document.getElementById('post-text').value;
-            if(!t && !pendingMedia) return alert("Empty post!");
-            const btn = document.getElementById('post-btn');
-            btn.innerText = "Posting..."; btn.disabled = true;
-
-            await addDoc(collection(db, "posts"), {
-                author: window.currentUser.user,
-                content: t,
-                media: pendingMedia,
-                type: mediaType,
-                hearts: [],
-                breaks: [],
-                replies: [],
-                createdAt: serverTimestamp()
-            });
-            window.closePostModal();
-            btn.innerText = "Post"; btn.disabled = false;
-        };
-
-        // --- REPLIES & REACTIONS ---
-        window.addReply = async (postId) => {
-            const input = document.getElementById(`reply-to-${postId}`);
-            if(!input.value) return;
-            await updateDoc(doc(db, "posts", postId), {
-                replies: arrayUnion({ author: window.currentUser.user, text: input.value, at: Date.now() })
-            });
-            input.value = "";
-        };
-
-        window.react = async (postId, type) => {
-            const postRef = doc(db, "posts", postId);
-            const post = allPosts.find(p => p.id === postId);
-            const isSet = post[type]?.includes(window.currentUser.user);
-            await updateDoc(postRef, { [type]: isSet ? arrayRemove(window.currentUser.user) : arrayUnion(window.currentUser.user) });
-        };
-
-        // --- MESSAGING & SOCIAL ---
-        window.openChat = (handle) => {
-            const msg = prompt(`Message @${handle}:`);
-            if(!msg) return;
-            const chatId = [window.currentUser.user, handle].sort().join('_');
-            addDoc(collection(db, "messages"), { chatId, from: window.currentUser.user, text: msg, at: serverTimestamp() });
-            alert("Sent!");
-        };
-
-        window.sendRequest = async (handle) => {
-            await updateDoc(doc(db, "users", handle), { requests: arrayUnion(window.currentUser.user) });
-            alert("Request Sent!");
-        };
-
-        window.acceptFriend = async (handle) => {
-            await updateDoc(doc(db, "users", window.currentUser.user), { friends: arrayUnion(handle), requests: arrayRemove(handle) });
-            await updateDoc(doc(db, "users", handle), { friends: arrayUnion(window.currentUser.user) });
-        };
-
-        // --- RENDERING ---
-        window.renderFeed = () => {
-            const feed = document.getElementById('feed-items');
-            feed.innerHTML = allPosts.filter(p => p.type !== 'video').map(p => `
-                <div class="post">
-                    <strong onclick="window.viewProfile('${p.author}')" style="color:var(--primary)">@${p.author}</strong>
-                    <p style="margin:10px 0">${p.content || ""}</p>
-                    ${p.media ? `<img src="${p.media}" style="width:100%; border-radius:10px; margin-bottom:10px;">` : ""}
-                    <div style="display:flex; gap:15px; margin-bottom:10px;">
-                        <span onclick="window.react('${p.id}', 'hearts')">❤️ ${p.hearts?.length || 0}</span>
-                        <span onclick="window.react('${p.id}', 'breaks')">💔 ${p.breaks?.length || 0}</span>
-                    </div>
-                    <div class="replies">
-                        ${(p.replies || []).map(r => `<div class="reply-box"><b>@${r.author}:</b> ${r.text}</div>`).join('')}
-                    </div>
-                    <div style="display:flex; gap:5px;">
-                        <input id="reply-to-${p.id}" class="input-box" style="margin:0; height:40px;" placeholder="Reply...">
-                        <button class="btn" style="width:70px; height:40px; padding:0" onclick="window.addReply('${p.id}')">Send</button>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        window.renderShorts = () => {
-            const container = document.getElementById('shorts-container');
-            container.innerHTML = allPosts.filter(p => p.type === 'video').map(p => `
-                <div class="short-video-wrapper">
-                    <video src="${p.media}" loop style="height:100%; width:100%; object-fit:cover;" onclick="this.paused ? this.play() : this.pause()"></video>
-                    <div style="position:absolute; bottom:120px; left:20px; text-shadow:0 2px 4px #000;">
-                        <strong onclick="window.viewProfile('${p.author}')" style="font-size:1.2rem">@${p.author}</strong>
-                        <p>${p.content}</p>
-                    </div>
-                    <div style="position:absolute; right:15px; bottom:150px; text-align:center;">
-                        <div onclick="window.react('${p.id}', 'hearts')" style="font-size:2rem">❤️<br><small style="font-size:12px">${p.hearts?.length || 0}</small></div>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        window.viewProfile = (handle) => {
-            const u = allUsers[handle];
-            if(!u) return;
+        window.viewProfile = (h) => {
+            const u = allUsers[h]; if(!u) return;
             window.showScreen('profile-screen');
             document.getElementById('view-name').innerText = u.name;
             document.getElementById('view-handle').innerText = "@" + u.user;
-            const isMe = handle === window.currentUser.user;
-            const isFriend = window.currentUser.friends?.includes(handle);
-            document.getElementById('profile-actions').innerHTML = isMe ? 
+            document.getElementById('profile-actions').innerHTML = h === window.currentUser.user ? 
                 `<button class="btn" style="background:#ef4444" onclick="localStorage.clear(); location.reload();">Logout</button>` : 
-                (isFriend ? `<button class="btn" style="background:#22c55e" onclick="window.openChat('${handle}')">Message</button>` : `<button class="btn" onclick="window.sendRequest('${handle}')">Add Friend</button>`);
+                `<button class="btn" onclick="window.sendRequest('${h}')">Add Friend</button>`;
         };
 
         function renderFriendsList() {
             const list = document.getElementById('friends-list');
-            let h = "<h4>Requests</h4>";
-            (window.currentUser.requests || []).forEach(r => h += `<div class="post" style="display:flex; justify-content:space-between; align-items:center;">@${r} <button class="btn" style="width:80px" onclick="window.acceptFriend('${r}')">Accept</button></div>`);
-            h += "<h4 style='margin-top:20px'>Friends</h4>";
-            (window.currentUser.friends || []).forEach(f => h += `<div class="post" style="display:flex; justify-content:space-between; align-items:center;">@${f} <button class="btn" style="width:80px; background:#22c55e" onclick="window.openChat('${f}')">Chat</button></div>`);
-            list.innerHTML = h;
+            let html = "<h4>Requests</h4>";
+            (window.currentUser.requests || []).forEach(r => html += `<div class="post">@${r} <button onclick="window.acceptFriend('${r}')">Accept</button></div>`);
+            list.innerHTML = html;
         }
 
-        // --- LISTENERS ---
-        onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snap) => {
-            allPosts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            window.renderFeed();
-            window.renderShorts();
+        // --- SNAPSHOTS ---
+        onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (s) => {
+            allPosts = s.docs.map(d => ({ id: d.id, ...d.data() }));
+            window.renderFeed(); window.renderVideoHub();
         });
 
-        onSnapshot(collection(db, "users"), (snap) => {
-            snap.forEach(d => { 
+        onSnapshot(collection(db, "users"), (s) => {
+            s.forEach(d => { 
                 allUsers[d.id] = d.data();
-                if(window.currentUser && d.id === window.currentUser.user) {
+                if(window.currentUser?.user === d.id) {
                     window.currentUser = d.data();
                     localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
                 }
@@ -309,12 +300,7 @@
         });
 
         window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
-        window.closePostModal = () => {
-            document.getElementById('post-modal').style.display = 'none';
-            pendingMedia = null; mediaType = 'text';
-            document.getElementById('file-status').innerText = "";
-            document.getElementById('post-text').value = "";
-        };
+        window.closePostModal = () => { document.getElementById('post-modal').style.display = 'none'; pendingMedia = null; };
 
         if(window.currentUser) window.showScreen('feed-screen'); else window.showScreen('signup-screen');
     </script>
