@@ -5,72 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SGP Social">
     <title>SGP Social</title>
     <style>
-        :root { --primary: #6366f1; --accent: #ec4899; --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-dim: #94a3b8; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #6366f1; --accent: #ec4899; --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-dim: #94a3b8; --wa-bg: #0b141a; --wa-msg: #202c33; --wa-own: #005c4b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); height: 100vh; width: 100vw; overflow: hidden; position: fixed; }
         
         #app-container { width: 100%; height: 100%; display: flex; flex-direction: column; }
         .screen { flex: 1; overflow-y: auto; display: none; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
         .active { display: flex !important; flex-direction: column; }
 
-        .btn { padding: 15px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; background: var(--primary); color: white; margin: 5px; font-size: 16px; width: 90%; align-self: center; }
-        .input-box { width: 90%; padding: 14px; margin: 8px auto; background: var(--surface); border: 1px solid #334155; color: white; border-radius: 12px; display: block; font-size: 16px; }
-        
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #334155; padding-bottom: 20px; z-index: 1000; }
-        .nav-item { font-size: 1.5rem; cursor: pointer; opacity: 0.8; }
+        /* Navigation & Headers */
+        .top-nav { display: flex; justify-content: space-around; padding: 15px; background: var(--surface); border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 10; }
+        .nav-btn { background: none; border: none; color: var(--text-dim); font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+        .nav-btn.active-tab { color: var(--primary); border-bottom: 2px solid var(--primary); }
 
-        .post { background: var(--surface); margin-bottom: 8px; padding: 15px; border-radius: 12px; width: 95%; align-self: center; }
-        #post-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 20px; padding-top: 60px; overflow-y: auto; }
+        .btn { padding: 15px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; background: var(--primary); color: white; margin: 5px; font-size: 16px; width: 90%; align-self: center; }
+        .input-box { width: 95%; padding: 14px; margin: 8px auto; background: var(--surface); border: 1px solid #334155; color: white; border-radius: 12px; display: block; font-size: 16px; }
         
-        .short-card { min-width: 150px; height: 250px; background: #000; border-radius: 15px; overflow: hidden; flex-shrink: 0; scroll-snap-align: start; position: relative; }
-        .reply-box { border-left: 2px solid var(--primary); padding-left: 10px; margin: 10px 0; font-size: 0.9rem; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #334155; padding-bottom: 20px; z-index: 1000; }
+        
+        /* Post UI */
+        .post { background: var(--surface); margin-bottom: 12px; padding: 15px; border-radius: 16px; width: 95%; align-self: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .reply-card { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin-top: 5px; font-size: 0.85rem; }
+
+        /* WhatsApp Style Messaging */
+        #chat-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-bg); z-index: 3000; display: none; flex-direction: column; }
+        .msg-bubble { max-width: 75%; padding: 8px 12px; border-radius: 8px; margin: 5px 10px; font-size: 0.95rem; line-height: 1.4; position: relative; }
+        .msg-theirs { align-self: flex-start; background: var(--wa-msg); color: white; }
+        .msg-mine { align-self: flex-end; background: var(--wa-own); color: white; }
+
+        /* Video Elements */
+        .short-card { min-width: 160px; height: 280px; background: #000; border-radius: 18px; overflow: hidden; flex-shrink: 0; position: relative; border: 1px solid #334155; }
+        
+        #post-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 20px; padding-top: 60px; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
-        <!-- Auth -->
-        <div id="signup-screen" class="screen">
-            <div style="margin:auto; width:100%; text-align:center;">
-                <h1 style="font-size: 3rem; margin-bottom: 10px;">SGP</h1>
-                <input type="text" id="reg-user" class="input-box" placeholder="Username">
-                <input type="text" id="reg-name" class="input-box" placeholder="Name">
-                <input type="password" id="reg-pass" class="input-box" placeholder="Password">
-                <button class="btn" onclick="window.doSignup()">Create Account</button>
-                <p onclick="window.showScreen('login-screen')" style="margin-top:20px; color: var(--accent)">Login</p>
+        <!-- Feed Home -->
+        <div id="feed-screen" class="screen active">
+            <div class="top-nav">
+                <button class="nav-btn" onclick="window.setFeedFilter('search')">🔍 Search</button>
+                <button class="nav-btn active-tab" id="btn-feed" onclick="window.setFeedFilter('foryou')">For You</button>
+                <button class="nav-btn" id="btn-recent" onclick="window.setFeedFilter('recent')">Recent</button>
             </div>
-        </div>
-
-        <div id="login-screen" class="screen">
-             <div style="margin:auto; width:100%; text-align:center;">
-                <h2>Login</h2>
-                <input type="text" id="log-user" class="input-box" placeholder="Username">
-                <input type="password" id="log-pass" class="input-box" placeholder="Password">
-                <button class="btn" onclick="window.doLogin()">Login</button>
+            <div id="search-bar-container" style="display:none; padding: 10px;">
+                <input type="text" id="search-input" class="input-box" placeholder="Search users or posts..." oninput="window.renderFeed()">
             </div>
+            <div id="feed-items" style="display: flex; flex-direction: column; padding-top: 10px;"></div>
         </div>
 
-        <!-- Main Feed -->
-        <div id="feed-screen" class="screen">
-            <div style="padding: 20px; padding-top: 40px;"><h2>Feed</h2></div>
-            <div id="feed-items" style="display: flex; flex-direction: column;"></div>
-        </div>
-
-        <!-- Video Hub Screen -->
+        <!-- Video Hub -->
         <div id="video-hub-screen" class="screen">
             <div id="video-hub-container"></div>
         </div>
 
-        <!-- Social Screen -->
+        <!-- Social/Friends -->
         <div id="friends-screen" class="screen">
             <div style="padding: 20px; padding-top: 40px;"><h2>Social</h2></div>
             <div id="friends-list" style="padding: 10px;"></div>
         </div>
 
-        <!-- Profile Screen -->
+        <!-- Profile -->
         <div id="profile-screen" class="screen">
             <div id="profile-header" style="text-align: center; padding: 40px 20px; background: var(--surface);">
                 <div style="width:80px; height:80px; background:var(--primary); border-radius:50%; margin: 0 auto 15px;"></div>
@@ -82,34 +80,43 @@
 
         <!-- Nav -->
         <nav class="nav-bar">
-            <div class="nav-item" onclick="window.showScreen('feed-screen')">🏠</div>
-            <div class="nav-item" onclick="window.showScreen('video-hub-screen')">🎬</div>
-            <div class="nav-item" onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2.2rem;">+</div>
-            <div class="nav-item" onclick="window.showScreen('friends-screen')">👥</div>
-            <div class="nav-item" onclick="window.viewProfile(window.currentUser.user)">👤</div>
+            <div onclick="window.showScreen('feed-screen')">🏠</div>
+            <div onclick="window.showScreen('video-hub-screen')">🎬</div>
+            <div onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2.2rem;">+</div>
+            <div onclick="window.showScreen('friends-screen')">👥</div>
+            <div onclick="window.viewProfile(window.currentUser.user)">👤</div>
         </nav>
     </div>
 
-    <!-- Create Post Modal -->
+    <!-- WhatsApp Chat UI -->
+    <div id="chat-overlay">
+        <div style="padding: 15px; background: var(--wa-msg); display: flex; align-items: center; gap: 15px;">
+            <span onclick="document.getElementById('chat-overlay').style.display='none'">⬅️</span>
+            <strong id="chat-with-name">Username</strong>
+        </div>
+        <div id="chat-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; padding: 10px 0;"></div>
+        <div style="padding: 10px; display: flex; background: var(--wa-msg);">
+            <input type="text" id="chat-input" style="flex:1; background:#2a3942; border:none; border-radius:20px; padding:10px; color:white;" placeholder="Message">
+            <button onclick="window.sendMessage()" style="background:none; border:none; margin-left:10px; font-size:1.5rem;">➡️</button>
+        </div>
+    </div>
+
+    <!-- Post Modal -->
     <div id="post-modal">
         <h2>Create</h2>
-        <textarea id="post-text" class="input-box" style="height: 120px;" placeholder="Say something..."></textarea>
-        
-        <input type="file" id="media-input" accept="image/*" style="display:none" onchange="window.previewFile(this)">
-        <button class="btn" style="background:#475569" onclick="document.getElementById('media-input').click()">📷 Add Photo</button>
-        
-        <input type="file" id="video-input" accept="video/*" style="display:none" onchange="window.previewVideo(this)">
-        <button class="btn" style="background:#475569" onclick="document.getElementById('video-input').click()">🎥 Add Video (Max 60s)</button>
-        
-        <p id="file-status" style="text-align:center; margin:10px; font-size:12px; color:var(--accent)"></p>
-        
+        <textarea id="post-text" class="input-box" style="height: 120px;" placeholder="What's happening?"></textarea>
+        <div id="file-status" style="color:var(--accent); text-align:center; margin:5px;"></div>
+        <button class="btn" onclick="document.getElementById('img-in').click()">📷 Photo</button>
+        <button class="btn" onclick="document.getElementById('vid-in').click()">🎥 Video (Max 60s)</button>
+        <input type="file" id="img-in" accept="image/*" hidden onchange="window.handleMedia(this, 'image')">
+        <input type="file" id="vid-in" accept="video/*" hidden onchange="window.handleMedia(this, 'video')">
         <button id="post-btn" class="btn" onclick="window.makePost()">Post</button>
         <button class="btn" style="background:transparent" onclick="window.closePostModal()">Cancel</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
@@ -128,140 +135,173 @@
         let allPosts = [];
         let pendingMedia = null;
         let mediaType = 'text';
+        let currentChatUser = null;
+        let feedFilter = 'foryou';
 
         // --- NAVIGATION ---
         window.showScreen = (id) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            const screen = document.getElementById(id);
-            if(screen) screen.classList.add('active');
+            document.getElementById(id).classList.add('active');
             document.querySelectorAll('video').forEach(v => v.pause());
-            if(id === 'friends-screen') renderFriendsList();
         };
 
-        // --- FILE PICKING ---
-        window.previewFile = (input) => { mediaType = 'image'; handleFile(input); };
-        window.previewVideo = (input) => {
-            if (!input.files[0]) return;
-            const video = document.createElement('video');
-            video.preload = 'metadata';
-            video.onloadedmetadata = () => {
-                window.URL.revokeObjectURL(video.src);
-                if (video.duration > 61) {
-                    alert("Video too long (Max 60s)");
-                    input.value = "";
-                    return;
-                }
-                mediaType = 'video';
-                handleFile(input);
-            };
-            video.src = URL.createObjectURL(input.files[0]);
+        window.setFeedFilter = (f) => {
+            feedFilter = f;
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-tab'));
+            document.getElementById('search-bar-container').style.display = f === 'search' ? 'block' : 'none';
+            window.renderFeed();
         };
-        
-        function handleFile(input) {
+
+        // --- MEDIA ---
+        window.handleMedia = (input, type) => {
+            const file = input.files[0];
+            if(!file) return;
+            if(type === 'video' && file.size > 1048576) { 
+                alert("File too large (>1MB). Try a shorter or lower quality video."); 
+                return; 
+            }
             const reader = new FileReader();
-            reader.onload = (e) => {
-                pendingMedia = e.target.result;
-                document.getElementById('file-status').innerText = "Media Prepared! ✅";
+            reader.onload = (e) => { 
+                pendingMedia = e.target.result; 
+                mediaType = type;
+                document.getElementById('file-status').innerText = type.toUpperCase() + " Attached!";
             };
-            reader.readAsDataURL(input.files[0]);
-        }
+            reader.readAsDataURL(file);
+        };
 
-        // --- CORE ACTIONS ---
+        // --- POSTING ---
         window.makePost = async () => {
-            const t = document.getElementById('post-text').value;
-            if(!t && !pendingMedia) return;
+            if(!window.currentUser) return;
             const btn = document.getElementById('post-btn');
-            btn.innerText = "Uploading..."; btn.disabled = true;
+            btn.disabled = true; btn.innerText = "Syncing...";
             try {
                 await addDoc(collection(db, "posts"), {
                     author: window.currentUser.user,
-                    content: t, media: pendingMedia, type: mediaType,
+                    content: document.getElementById('post-text').value,
+                    media: pendingMedia, type: mediaType,
                     hearts: [], breaks: [], replies: [], createdAt: serverTimestamp()
                 });
                 window.closePostModal();
-            } catch(e) { alert("File too large for cloud storage."); }
-            btn.innerText = "Post"; btn.disabled = false;
+            } catch(e) { alert("Upload failed. Video likely too large."); }
+            btn.disabled = false; btn.innerText = "Post";
         };
 
-        window.react = async (postId, type) => {
-            const postRef = doc(db, "posts", postId);
-            const post = allPosts.find(p => p.id === postId);
-            const isSet = post[type]?.includes(window.currentUser.user);
-            await updateDoc(postRef, { [type]: isSet ? arrayRemove(window.currentUser.user) : arrayUnion(window.currentUser.user) });
+        window.react = async (id, type) => {
+            const ref = doc(db, "posts", id);
+            const p = allPosts.find(x => x.id === id);
+            const active = p[type]?.includes(window.currentUser.user);
+            await updateDoc(ref, { [type]: active ? arrayRemove(window.currentUser.user) : arrayUnion(window.currentUser.user) });
         };
 
-        window.addReply = async (postId) => {
-            const input = document.getElementById(`reply-to-${postId}`);
-            if(!input.value) return;
-            await updateDoc(doc(db, "posts", postId), {
-                replies: arrayUnion({ author: window.currentUser.user, text: input.value, at: Date.now() })
+        window.addReply = async (id) => {
+            const val = document.getElementById(`rep-${id}`).value;
+            if(!val) return;
+            await updateDoc(doc(db, "posts", id), {
+                replies: arrayUnion({ author: window.currentUser.user, text: val, at: Date.now() })
             });
-            input.value = "";
+            document.getElementById(`rep-${id}`).value = "";
         };
 
-        // --- RENDERING ---
+        // --- RENDERING FEEDS ---
         window.renderFeed = () => {
-            const feed = document.getElementById('feed-items');
-            feed.innerHTML = allPosts.filter(p => p.type !== 'video').map(p => `
+            let posts = [...allPosts].filter(p => p.type !== 'video');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+
+            if(feedFilter === 'recent') {
+                posts.sort((a,b) => b.createdAt - a.createdAt);
+            } else if(feedFilter === 'foryou') {
+                // Simple logic: sort by posts involving authors you've liked before
+                const likedAuthors = allPosts.filter(p => p.hearts?.includes(window.currentUser.user)).map(p => p.author);
+                posts.sort((a,b) => (likedAuthors.includes(b.author) ? 1 : -1));
+            } else if(feedFilter === 'search') {
+                posts = posts.filter(p => p.content?.toLowerCase().includes(searchVal) || p.author.toLowerCase().includes(searchVal));
+            }
+
+            document.getElementById('feed-items').innerHTML = posts.map(p => `
                 <div class="post">
                     <strong onclick="window.viewProfile('${p.author}')">@${p.author}</strong>
-                    <p style="margin:10px 0">${p.content}</p>
-                    ${p.media ? `<img src="${p.media}" style="width:100%; border-radius:10px;">` : ""}
-                    <div style="margin-top:10px;">
+                    <p style="margin:8px 0;">${p.content}</p>
+                    ${p.media ? `<img src="${p.media}" style="width:100%; border-radius:12px; margin-bottom:10px;">` : ""}
+                    <div style="display:flex; gap:15px; margin-bottom:10px; font-size:0.9rem;">
                         <span onclick="window.react('${p.id}', 'hearts')">❤️ ${p.hearts?.length || 0}</span>
+                        <span onclick="window.react('${p.id}', 'breaks')">💔 ${p.breaks?.length || 0}</span>
+                    </div>
+                    <div class="replies-list">
+                        ${(p.replies || []).map(r => `<div class="reply-card"><b>@${r.author}</b>: ${r.text}</div>`).join('')}
+                    </div>
+                    <div style="display:flex; gap:5px; margin-top:10px;">
+                        <input id="rep-${p.id}" class="input-box" style="margin:0; height:35px; font-size:0.8rem;" placeholder="Reply...">
+                        <button class="btn" style="width:60px; padding:0; height:35px;" onclick="window.addReply('${p.id}')">Send</button>
                     </div>
                 </div>
             `).join('');
         };
 
         window.renderVideoHub = () => {
+            const vids = allPosts.filter(p => p.type === 'video');
             const container = document.getElementById('video-hub-container');
-            const videos = allPosts.filter(p => p.type === 'video');
-            const shorts = videos.slice(0, 6);
-            const normal = videos.slice(6);
-
             container.innerHTML = `
                 <div style="padding: 40px 20px 10px;"><h2>Video Hub</h2></div>
-                <div style="display: flex; overflow-x: auto; gap: 10px; padding: 15px; scroll-snap-type: x mandatory;">
-                    ${shorts.map(p => `
+                <div style="display:flex; overflow-x:auto; gap:12px; padding:15px; scroll-snap-type: x mandatory;">
+                    ${vids.slice(0,6).map(p => `
                         <div class="short-card">
-                            <video src="${p.media}" loop playsinline style="width:100%; height:100%; object-fit:cover;" onclick="this.paused ? this.play() : this.pause()"></video>
-                            <div style="position:absolute; bottom:5px; left:10px; font-size:0.8rem;">@${p.author}</div>
+                            <video src="${p.media}" loop playsinline style="width:100%; height:100%; object-fit:cover;" onclick="this.paused?this.play():this.pause()"></video>
+                            <div style="position:absolute; bottom:8px; left:8px; font-size:0.8rem; text-shadow:1px 1px #000;">@${p.author}</div>
                         </div>
                     `).join('')}
                 </div>
-                <div style="padding: 10px 20px;"><h3>Feed Videos</h3></div>
-                ${normal.map(p => `
+                <div style="padding:10px 20px;"><h3>Recent Videos</h3></div>
+                ${vids.slice(6).map(p => `
                     <div class="post">
-                        <strong onclick="window.viewProfile('${p.author}')">@${p.author}</strong>
-                        <p>${p.content}</p>
-                        <video src="${p.media}" controls playsinline style="width:100%; border-radius:10px; background:#000; margin:10px 0;"></video>
+                        <strong>@${p.author}</strong>
+                        <video src="${p.media}" controls playsinline style="width:100%; border-radius:12px; margin:10px 0; background:#000;"></video>
                         <div onclick="window.react('${p.id}', 'hearts')">❤️ ${p.hearts?.length || 0}</div>
                     </div>
                 `).join('')}
             `;
         };
 
-        // --- SOCIAL & AUTH ---
+        // --- MESSAGING ---
+        window.openChat = (user) => {
+            currentChatUser = user;
+            document.getElementById('chat-with-name').innerText = "@" + user;
+            document.getElementById('chat-overlay').style.display = 'flex';
+            const chatId = [window.currentUser.user, user].sort().join('_');
+            
+            onSnapshot(query(collection(db, "messages"), where("chatId", "==", chatId), orderBy("at", "asc")), (snap) => {
+                const msgs = snap.docs.map(d => d.data());
+                document.getElementById('chat-messages').innerHTML = msgs.map(m => `
+                    <div class="msg-bubble ${m.from === window.currentUser.user ? 'msg-mine' : 'msg-theirs'}">
+                        ${m.text}
+                    </div>
+                `).join('');
+                const scroll = document.getElementById('chat-messages');
+                scroll.scrollTop = scroll.scrollHeight;
+            });
+        };
+
+        window.sendMessage = async () => {
+            const t = document.getElementById('chat-input').value;
+            if(!t) return;
+            const chatId = [window.currentUser.user, currentChatUser].sort().join('_');
+            await addDoc(collection(db, "messages"), { chatId, from: window.currentUser.user, text: t, at: serverTimestamp() });
+            document.getElementById('chat-input').value = "";
+        };
+
+        // --- AUTH/DATA ---
         window.doSignup = async () => {
             const u = document.getElementById('reg-user').value.toLowerCase().trim();
             const n = document.getElementById('reg-name').value;
             const p = document.getElementById('reg-pass').value;
-            const userRef = doc(db, "users", u);
-            const userData = { user: u, name: n, pass: p, friends: [], requests: [] };
-            await setDoc(userRef, userData);
-            window.currentUser = userData;
-            localStorage.setItem('sgp_session', JSON.stringify(userData));
+            await setDoc(doc(db, "users", u), { user: u, name: n, pass: p, friends: [], requests: [] });
             location.reload();
         };
 
         window.doLogin = async () => {
             const u = document.getElementById('log-user').value.toLowerCase().trim();
-            const p = document.getElementById('log-pass').value;
             const snap = await getDoc(doc(db, "users", u));
-            if(snap.exists() && snap.data().pass === p) {
-                window.currentUser = snap.data();
-                localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+            if(snap.exists() && snap.data().pass === document.getElementById('log-pass').value) {
+                localStorage.setItem('sgp_session', JSON.stringify(snap.data()));
                 location.reload();
             }
         };
@@ -273,34 +313,23 @@
             document.getElementById('view-handle').innerText = "@" + u.user;
             document.getElementById('profile-actions').innerHTML = h === window.currentUser.user ? 
                 `<button class="btn" style="background:#ef4444" onclick="localStorage.clear(); location.reload();">Logout</button>` : 
-                `<button class="btn" onclick="window.sendRequest('${h}')">Add Friend</button>`;
+                `<button class="btn" onclick="window.openChat('${h}')">Chat</button>`;
         };
 
-        function renderFriendsList() {
-            const list = document.getElementById('friends-list');
-            let html = "<h4>Requests</h4>";
-            (window.currentUser.requests || []).forEach(r => html += `<div class="post">@${r} <button onclick="window.acceptFriend('${r}')">Accept</button></div>`);
-            list.innerHTML = html;
-        }
-
-        // --- SNAPSHOTS ---
         onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (s) => {
             allPosts = s.docs.map(d => ({ id: d.id, ...d.data() }));
             window.renderFeed(); window.renderVideoHub();
         });
 
         onSnapshot(collection(db, "users"), (s) => {
-            s.forEach(d => { 
-                allUsers[d.id] = d.data();
-                if(window.currentUser?.user === d.id) {
-                    window.currentUser = d.data();
-                    localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
-                }
-            });
+            s.forEach(d => allUsers[d.id] = d.data());
         });
 
         window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
-        window.closePostModal = () => { document.getElementById('post-modal').style.display = 'none'; pendingMedia = null; };
+        window.closePostModal = () => { 
+            document.getElementById('post-modal').style.display = 'none'; 
+            pendingMedia = null; document.getElementById('post-text').value = ""; 
+        };
 
         if(window.currentUser) window.showScreen('feed-screen'); else window.showScreen('signup-screen');
     </script>
