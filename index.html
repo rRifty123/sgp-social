@@ -15,8 +15,6 @@
             --glass: rgba(30, 41, 59, 0.7);
             --text: #f8fafc; 
             --text-dim: #94a3b8; 
-            --wa-bg: #0b141a; 
-            --wa-own: #005c4b; 
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -48,11 +46,6 @@
 
         .post { background: var(--glass); backdrop-filter: blur(5px); margin-bottom: 15px; padding: 18px; border-radius: 20px; width: 92%; align-self: center; border: 1px solid rgba(255,255,255,0.08); }
         .reply-card { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; margin-top: 8px; font-size: 0.85rem; border-left: 3px solid var(--accent); }
-
-        #chat-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: none; flex-direction: column; }
-        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; margin: 6px 12px; font-size: 0.95rem; }
-        .msg-theirs { align-self: flex-start; background: #334155; color: white; border-bottom-left-radius: 2px; }
-        .msg-mine { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
 
         .pfp-large { width:100px; height:100px; border-radius:50%; margin: 0 auto 20px; box-shadow: 0 0 30px var(--primary); object-fit: cover; background: #334155; display: block;}
         .pfp-small { width:35px; height:35px; border-radius:50%; object-fit: cover; background: var(--primary); }
@@ -104,10 +97,10 @@
             <div id="video-hub-container"></div>
         </div>
 
-        <!-- Social -->
-        <div id="friends-screen" class="screen">
-            <div style="padding: 40px 25px 10px;"><h2>Social Circle</h2></div>
-            <div id="friends-list" style="padding: 10px;"></div>
+        <!-- Following Tab (Replaced Social Circle) -->
+        <div id="following-screen" class="screen">
+            <div style="padding: 40px 25px 10px;"><h2>Following</h2><p style="color:var(--text-dim)">Latest from people you follow</p></div>
+            <div id="following-feed" style="display: flex; flex-direction: column; padding-top: 15px;"></div>
         </div>
 
         <!-- Profile -->
@@ -128,22 +121,9 @@
             <div class="nav-item" onclick="window.showScreen('feed-screen')">🏠</div>
             <div class="nav-item" onclick="window.showScreen('video-hub-screen')">🎬</div>
             <div class="nav-item" onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2.5rem;">+</div>
-            <div class="nav-item" onclick="window.showScreen('friends-screen')">👥</div>
+            <div class="nav-item" onclick="window.showScreen('following-screen')">👣</div>
             <div class="nav-item" onclick="window.viewProfile(window.currentUser?.user)">👤</div>
         </nav>
-    </div>
-
-    <!-- Chat Overlay -->
-    <div id="chat-overlay">
-        <div style="padding: 20px; background: var(--glass); display: flex; align-items: center; gap: 20px;">
-            <span onclick="document.getElementById('chat-overlay').style.display='none'" style="font-size: 1.5rem;">⬅️</span>
-            <strong id="chat-with-name">Username</strong>
-        </div>
-        <div id="chat-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; padding: 20px 0;"></div>
-        <div style="padding: 15px; display: flex;">
-            <input type="text" id="chat-input" style="flex:1; background:rgba(255,255,255,0.1); border:none; border-radius:25px; padding:12px; color:white;" placeholder="Message...">
-            <button onclick="window.sendMessage()" style="background:var(--primary); border:none; margin-left:10px; width:45px; height:45px; border-radius:50%; color:white;">➡️</button>
-        </div>
     </div>
 
     <!-- Create Post Modal -->
@@ -152,7 +132,7 @@
         <textarea id="post-text" class="input-box" style="height: 140px;" placeholder="What's on your mind?"></textarea>
         <div id="file-status" style="color:var(--primary); text-align:center; font-weight:bold; margin: 10px;"></div>
         <button class="btn" onclick="document.getElementById('img-in').click()" style="background:#334155;">📷 Photo</button>
-        <button class="btn" onclick="document.getElementById('vid-in').click()" style="background:#334155;">🎥 Video (Max 60s)</button>
+        <button class="btn" onclick="document.getElementById('vid-in').click()" style="background:#334155;">🎥 Video (HD)</button>
         <input type="file" id="img-in" accept="image/*" hidden onchange="window.handleMedia(this, 'image')">
         <input type="file" id="vid-in" accept="video/*" hidden onchange="window.handleMedia(this, 'video')">
         <button id="post-btn" class="btn" onclick="window.makePost()">Post Now</button>
@@ -161,7 +141,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
@@ -187,6 +167,7 @@
             const target = document.getElementById(id);
             if(target) target.classList.add('active');
             document.querySelectorAll('video').forEach(v => v.pause());
+            if(id === 'following-screen') renderFollowingFeed();
         };
 
         window.setFeedFilter = (f) => {
@@ -225,16 +206,32 @@
             reader.readAsDataURL(file);
         };
 
+        window.toggleFollow = async (targetUser) => {
+            const myRef = doc(db, "users", window.currentUser.user);
+            const isFollowing = window.currentUser.following?.includes(targetUser);
+            if(isFollowing) {
+                await updateDoc(myRef, { following: arrayRemove(targetUser) });
+                window.currentUser.following = window.currentUser.following.filter(u => u !== targetUser);
+            } else {
+                await updateDoc(myRef, { following: arrayUnion(targetUser) });
+                window.currentUser.following = [...(window.currentUser.following || []), targetUser];
+            }
+            localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+            window.viewProfile(targetUser);
+        };
+
         window.makePost = async () => {
             const btn = document.getElementById('post-btn');
-            btn.disabled = true; btn.innerText = "Posting...";
-            await addDoc(collection(db, "posts"), {
-                author: window.currentUser.user,
-                content: document.getElementById('post-text').value,
-                media: pendingMedia, type: mediaType,
-                hearts: [], breaks: [], replies: [], createdAt: serverTimestamp()
-            });
-            window.closePostModal();
+            btn.disabled = true; btn.innerText = "Processing HD Media...";
+            try {
+                await addDoc(collection(db, "posts"), {
+                    author: window.currentUser.user,
+                    content: document.getElementById('post-text').value,
+                    media: pendingMedia, type: mediaType,
+                    hearts: [], breaks: [], replies: [], createdAt: serverTimestamp()
+                });
+                window.closePostModal();
+            } catch(e) { alert("File too large for database limits."); }
             btn.disabled = false; btn.innerText = "Post Now";
         };
 
@@ -249,8 +246,13 @@
             let posts = [...allPosts].filter(p => p.type !== 'video');
             const searchVal = document.getElementById('search-input').value.toLowerCase();
             if(feedFilter === 'search') posts = posts.filter(p => p.author.toLowerCase().includes(searchVal));
-            
             document.getElementById('feed-items').innerHTML = posts.map(p => renderPostHTML(p)).join('');
+        };
+
+        window.renderFollowingFeed = () => {
+            const following = window.currentUser.following || [];
+            const posts = allPosts.filter(p => following.includes(p.author));
+            document.getElementById('following-feed').innerHTML = posts.length ? posts.map(p => renderPostHTML(p)).join('') : '<p style="text-align:center; padding:50px; color:var(--text-dim)">Follow users to see their posts here!</p>';
         };
 
         window.renderVideoHub = () => {
@@ -283,10 +285,12 @@
             document.getElementById('view-pfp').src = u.pfp || "https://via.placeholder.com/100";
             
             const isMe = h === window.currentUser?.user;
+            const isFollowing = window.currentUser.following?.includes(h);
+
             document.getElementById('profile-actions').innerHTML = isMe ? 
                 `<button class="btn" onclick="document.getElementById('pfp-upload').click()">Change Picture</button>
                  <button class="btn" style="background:#ef4444" onclick="localStorage.clear(); location.reload();">Logout</button>` : 
-                `<button class="btn" onclick="window.openChat('${h}')">Message User</button>`;
+                `<button class="btn" style="background:${isFollowing ? '#334155':'var(--primary)'}" onclick="window.toggleFollow('${h}')">${isFollowing ? 'Unfollow' : 'Follow User'}</button>`;
             
             const uposts = allPosts.filter(p => p.author === h);
             document.getElementById('user-posts-container').innerHTML = uposts.map(p => renderPostHTML(p)).join('');
@@ -315,7 +319,7 @@
             const n = document.getElementById('reg-name').value;
             const p = document.getElementById('reg-pass').value;
             if(!u || !n || !p) return alert("Fill all fields");
-            const userData = { user: u, name: n, pass: p, pfp: "", friends: [], requests: [] };
+            const userData = { user: u, name: n, pass: p, pfp: "", following: [] };
             await setDoc(doc(db, "users", u), userData);
             localStorage.setItem('sgp_session', JSON.stringify(userData));
             location.reload();
@@ -334,6 +338,7 @@
         onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (s) => {
             allPosts = s.docs.map(d => ({ id: d.id, ...d.data() }));
             window.renderFeed(); window.renderVideoHub();
+            if(document.getElementById('following-screen').classList.contains('active')) renderFollowingFeed();
         });
 
         onSnapshot(collection(db, "users"), (s) => {
@@ -341,9 +346,10 @@
         });
 
         window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
-        window.closePostModal = () => { document.getElementById('post-modal').style.display = 'none'; pendingMedia = null; };
+        window.closePostModal = () => { document.getElementById('post-modal').style.display = 'none'; pendingMedia = null; document.getElementById('file-status').innerText = "";};
 
         window.onload = () => { if(window.currentUser) window.showScreen('feed-screen'); else window.showScreen('signup-screen'); };
     </script>
 </body>
 </html>
+
