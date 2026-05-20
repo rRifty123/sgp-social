@@ -15,6 +15,9 @@
             --glass: rgba(30, 41, 59, 0.7);
             --text: #f8fafc; 
             --text-dim: #94a3b8; 
+            --evt-bg: #1e1b4b;
+            --evt-accent: #ec4899;
+            --evt-text: #f8fafc;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -28,12 +31,13 @@
         
         #app-container { width: 100%; height: 100%; display: flex; flex-direction: column; }
         
-        .screen { flex: 1; overflow-y: auto; display: none; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
+        .screen { flex: 1; overflow-y: auto; display: none; padding-bottom: 120px; -webkit-overflow-scrolling: touch; }
         .active { display: flex !important; flex-direction: column; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .top-nav { display: flex; justify-content: space-around; padding: 15px; background: var(--glass); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 10; }
-        .nav-btn { background: none; border: none; color: var(--text-dim); font-weight: bold; cursor: pointer; padding: 8px 12px; border-radius: 20px; transition: 0.3s; }
+        /* Moved down for effortless mobile thumb access */
+        .top-nav { display: flex; justify-content: space-around; padding: 25px 15px 15px 15px; background: var(--glass); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 10; margin-top: env(safe-area-inset-top, 20px); }
+        .nav-btn { background: none; border: none; color: var(--text-dim); font-weight: bold; cursor: pointer; padding: 10px 16px; border-radius: 20px; transition: 0.3s; font-size: 0.95rem; }
         .nav-btn.active-tab { color: white; background: var(--primary); box-shadow: 0 0 15px var(--primary); }
 
         .btn { padding: 15px; border-radius: 14px; border: none; cursor: pointer; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; margin: 8px auto; width: 90%; align-self: center; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center;}
@@ -45,13 +49,18 @@
         .nav-item { font-size: 1.6rem; cursor: pointer; filter: grayscale(1); transition: 0.3s; }
 
         .post { background: var(--glass); backdrop-filter: blur(5px); margin-bottom: 15px; padding: 18px; border-radius: 20px; width: 92%; align-self: center; border: 1px solid rgba(255,255,255,0.08); }
-        .reply-card { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; margin-top: 8px; font-size: 0.85rem; border-left: 3px solid var(--accent); }
+        .reply-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px; margin-top: 8px; font-size: 0.85rem; border-left: 3px solid var(--accent); color: var(--text); }
 
-        .pfp-large { width:100px; height:100px; border-radius:50%; margin: 0 auto 20px; box-shadow: 0 0 30px var(--primary); object-fit: cover; background: #334155; display: block;}
+        .pfp-large { width:100px; height:100px; border-radius:50%; margin: 0 auto 15px; box-shadow: 0 0 30px var(--primary); object-fit: cover; background: #334155; display: block;}
         .pfp-small { width:35px; height:35px; border-radius:50%; object-fit: cover; background: var(--primary); }
 
         .short-card { min-width: 170px; height: 300px; background: #000; border-radius: 22px; overflow: hidden; flex-shrink: 0; position: relative; }
-        #post-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; }
+        #post-modal, #event-admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; overflow-y: auto; }
+
+        /* Custom Dynamic Event Styling Hooks */
+        .event-container { width: 92%; margin: 20px auto; padding: 20px; border-radius: 24px; background: var(--evt-bg); color: var(--evt-text); border: 1px solid rgba(255,255,255,0.1); }
+        .quest-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--evt-accent); }
+        .shop-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
@@ -97,10 +106,23 @@
             <div id="video-hub-container"></div>
         </div>
 
-        <!-- Following Tab (Replaced Social Circle) -->
+        <!-- Following Tab -->
         <div id="following-screen" class="screen">
             <div style="padding: 40px 25px 10px;"><h2>Following</h2><p style="color:var(--text-dim)">Latest from people you follow</p></div>
             <div id="following-feed" style="display: flex; flex-direction: column; padding-top: 15px;"></div>
+        </div>
+
+        <!-- Event Screen -->
+        <div id="event-screen" class="screen">
+            <div style="padding: 40px 25px 5px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2>Live Hub Event</h2>
+                    <p style="color:var(--text-dim)" id="user-evt-wallet">Balance: 0 Tokens</p>
+                </div>
+                <span onclick="window.verifyEventAdmin()" style="font-size:1.6rem; cursor:pointer; opacity:0.6;">⚙️</span>
+            </div>
+            
+            <div id="live-event-render"></div>
         </div>
 
         <!-- Profile -->
@@ -108,8 +130,10 @@
             <div id="profile-header" style="text-align: center; padding: 50px 20px; background: linear-gradient(to bottom, var(--surface), transparent);">
                 <img id="view-pfp" class="pfp-large" src="https://via.placeholder.com/100">
                 <h2 id="view-name">...</h2>
-                <p id="view-handle" style="color: var(--text-dim);">@user</p>
-                <div id="profile-actions" style="margin-top: 25px;"></div>
+                <p id="view-handle" style="color: var(--text-dim); margin-bottom:4px;">@user</p>
+                <p id="view-title" style="color: var(--accent); font-weight:bold; font-size:0.9rem; letter-spacing:1px; margin-bottom:8px; text-transform:uppercase;"></p>
+                <p id="view-followers" style="color: var(--text); font-size:0.9rem; font-weight:bold; margin-bottom:12px;">0 Followers</p>
+                <div id="profile-actions" style="margin-top: 15px;"></div>
                 <input type="file" id="pfp-upload" hidden accept="image/*" onchange="window.updatePFP(this)">
             </div>
             <div style="padding: 10px 20px;"><h3>User Posts</h3></div>
@@ -122,6 +146,7 @@
             <div class="nav-item" onclick="window.showScreen('video-hub-screen')">🎬</div>
             <div class="nav-item" onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2.5rem;">+</div>
             <div class="nav-item" onclick="window.showScreen('following-screen')">👣</div>
+            <div class="nav-item" onclick="window.showScreen('event-screen')">📅</div>
             <div class="nav-item" onclick="window.viewProfile(window.currentUser?.user)">👤</div>
         </nav>
     </div>
@@ -137,6 +162,29 @@
         <input type="file" id="vid-in" accept="video/*" hidden onchange="window.handleMedia(this, 'video')">
         <button id="post-btn" class="btn" onclick="window.makePost()">Post Now</button>
         <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="window.closePostModal()">Cancel</button>
+    </div>
+
+    <!-- Event Creator Customizer Studio Panel -->
+    <div id="event-admin-modal">
+        <h2>Event Customizer Hub</h2>
+        <p style="color:var(--text-dim); margin-bottom:20px;">Design current globally synced event criteria</p>
+        
+        <h3>1. Custom Visual Theme</h3>
+        <input type="text" id="evt-adm-title" class="input-box" placeholder="Event Name">
+        <input type="text" id="evt-adm-desc" class="input-box" placeholder="Description Text">
+        <input type="text" id="evt-adm-bg" class="input-box" placeholder="Background Color Hex (e.g. #1e1b4b)">
+        <input type="text" id="evt-adm-accent" class="input-box" placeholder="Accent Glow Color Hex">
+        <input type="text" id="evt-adm-coin" class="input-box" placeholder="Currency Name (e.g. Gems)">
+
+        <h3 style="margin-top:20px;">2. Add New Quest (+10 Coins reward)</h3>
+        <input type="text" id="evt-adm-qtitle" class="input-box" placeholder="Quest Action Name">
+
+        <h3 style="margin-top:20px;">3. Add Store Title Reward</h3>
+        <input type="text" id="evt-adm-tname" class="input-box" placeholder="Title Value (e.g. ELITE)">
+        <input type="number" id="evt-adm-tcost" class="input-box" placeholder="Title Coin Price Code">
+
+        <button class="btn" onclick="window.saveGlobalEvent()">Deploy Event Live</button>
+        <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('event-admin-modal').style.display='none'">Exit Engine</button>
     </div>
 
     <script type="module">
@@ -158,6 +206,7 @@
         window.currentUser = JSON.parse(localStorage.getItem('sgp_session')) || null;
         let allUsers = {};
         let allPosts = [];
+        let globalEvent = { title: "No Event Active", desc: "Check back later", bg: "#1e293b", accent: "#ec4899", coin: "Tokens", quests: [], titles: [] };
         let pendingMedia = null;
         let mediaType = 'text';
         let feedFilter = 'foryou';
@@ -168,6 +217,7 @@
             if(target) target.classList.add('active');
             document.querySelectorAll('video').forEach(v => v.pause());
             if(id === 'following-screen') renderFollowingFeed();
+            if(id === 'event-screen') renderLiveEventPage();
         };
 
         window.setFeedFilter = (f) => {
@@ -228,10 +278,10 @@
                     author: window.currentUser.user,
                     content: document.getElementById('post-text').value,
                     media: pendingMedia, type: mediaType,
-                    hearts: [], breaks: [], replies: [], createdAt: serverTimestamp()
+                    hearts: [], breaks: [], replies: [], reports: [], createdAt: serverTimestamp()
                 });
                 window.closePostModal();
-            } catch(e) { alert("File too large for database limits."); }
+            } catch(e) { alert("File processing error or excessive data limits."); }
             btn.disabled = false; btn.innerText = "Post Now";
         };
 
@@ -240,6 +290,20 @@
             const p = allPosts.find(x => x.id === id);
             const active = p[type]?.includes(window.currentUser.user);
             await updateDoc(ref, { [type]: active ? arrayRemove(window.currentUser.user) : arrayUnion(window.currentUser.user) });
+        };
+
+        window.reportPost = async (id) => {
+            await updateDoc(doc(db, "posts", id), { reports: arrayUnion(window.currentUser.user) });
+            alert("This post has been reported to staff successfully.");
+        };
+
+        window.addReply = async (id) => {
+            const el = document.getElementById(`rep-${id}`);
+            if(!el || !el.value) return;
+            await updateDoc(doc(db, "posts", id), {
+                replies: arrayUnion({ author: window.currentUser.user, text: el.value, at: Date.now() })
+            });
+            el.value = "";
         };
 
         window.renderFeed = () => {
@@ -264,13 +328,19 @@
                     ${vids.slice(0,6).map(p => `
                         <div class="short-card">
                             <video src="${p.media}" loop playsinline style="width:100%; height:100%; object-fit:cover;" onclick="this.paused?this.play():this.pause()"></video>
-                            <div style="position:absolute; bottom:12px; left:12px; font-weight:bold;">@${p.author}</div>
+                            <div style="position:absolute; bottom:12px; left:12px; font-weight:bold; display:flex; justify-content:space-between; width:85%;">
+                                <span>@${p.author}</span>
+                                <span onclick="window.reportPost('${p.id}')" style="cursor:pointer; font-size:0.8rem; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:4px;">⚠️</span>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
                 ${vids.slice(6).map(p => `
                     <div class="post">
-                        <strong>@${p.author}</strong>
+                        <div style="display:flex; justify-content:between; align-items:center;">
+                            <strong>@${p.author}</strong>
+                            <span onclick="window.reportPost('${p.id}')" style="cursor:pointer; font-size:0.9rem; color:var(--text-dim);">⚠️ Report</span>
+                        </div>
                         <video src="${p.media}" controls playsinline style="width:100%; border-radius:15px; margin-top:10px; background:#000;"></video>
                     </div>
                 `).join('')}
@@ -283,6 +353,13 @@
             document.getElementById('view-name').innerText = u.name;
             document.getElementById('view-handle').innerText = "@" + u.user;
             document.getElementById('view-pfp').src = u.pfp || "https://via.placeholder.com/100";
+            document.getElementById('view-title').innerText = u.activeTitle ? `• ${u.activeTitle} •` : "";
+            
+            let followerCount = 0;
+            Object.values(allUsers).forEach(usr => {
+                if(usr.following?.includes(h)) followerCount++;
+            });
+            document.getElementById('view-followers').innerText = `${followerCount} Followers`;
             
             const isMe = h === window.currentUser?.user;
             const isFollowing = window.currentUser.following?.includes(h);
@@ -298,28 +375,175 @@
 
         function renderPostHTML(p) {
             const user = allUsers[p.author] || {};
+            const repliesHTML = (p.replies || []).map(r => `
+                <div class="reply-card"><b>@${r.author}:</b> ${r.text}</div>
+            `).join('');
+
             return `
                 <div class="post">
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                        <img class="pfp-small" src="${user.pfp || 'https://via.placeholder.com/35'}">
-                        <strong onclick="window.viewProfile('${p.author}')">@${p.author}</strong>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img class="pfp-small" src="${user.pfp || 'https://via.placeholder.com/35'}">
+                            <strong onclick="window.viewProfile('${p.author}')">@${p.author}</strong>
+                        </div>
+                        <span onclick="window.reportPost('${p.id}')" style="cursor:pointer; font-size:0.85rem; color:var(--text-dim);">⚠️ Report</span>
                     </div>
                     <p>${p.content}</p>
                     ${p.media ? (p.type === 'image' ? `<img src="${p.media}" style="width:100%; border-radius:12px; margin-top:10px;">` : `<video src="${p.media}" controls style="width:100%; border-radius:12px; margin-top:10px;"></video>`) : ""}
-                    <div style="display:flex; gap:20px; margin-top:15px; font-weight:bold;">
+                    <div style="display:flex; gap:20px; margin-top:15px; font-weight:bold; margin-bottom:10px;">
                         <span onclick="window.react('${p.id}', 'hearts')">❤️ ${p.hearts?.length || 0}</span>
                         <span onclick="window.react('${p.id}', 'breaks')">💔 ${p.breaks?.length || 0}</span>
+                    </div>
+                    <div class="replies-box" style="border-top:1px solid rgba(255,255,255,0.05); padding-top:5px;">
+                        ${repliesHTML}
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:10px;">
+                        <input id="rep-${p.id}" class="input-box" style="margin:0; padding:8px 12px; font-size:0.9rem; border-radius:10px; flex:1;" placeholder="Add reply...">
+                        <button onclick="window.addReply('${p.id}')" class="btn" style="width:auto; margin:0; padding:0 15px; border-radius:10px; font-size:0.85rem;">Send</button>
                     </div>
                 </div>
             `;
         }
 
+        /* --- LOGICAL EVENT FRAMEWORK ENGINE --- */
+        window.verifyEventAdmin = () => {
+            const pass = prompt("Enter Master Event Creation Access Key:");
+            if(pass === "080112") {
+                document.getElementById('event-admin-modal').style.display = 'flex';
+                document.getElementById('evt-adm-title').value = globalEvent.title || "";
+                document.getElementById('evt-adm-desc').value = globalEvent.desc || "";
+                document.getElementById('evt-adm-bg').value = globalEvent.bg || "";
+                document.getElementById('evt-adm-accent').value = globalEvent.accent || "";
+                document.getElementById('evt-adm-coin').value = globalEvent.coin || "";
+            } else if (pass !== null) {
+                alert("Incorrect key clearance verification.");
+            }
+        };
+
+        window.saveGlobalEvent = async () => {
+            const newQ = document.getElementById('evt-adm-qtitle').value;
+            const newTName = document.getElementById('evt-adm-tname').value;
+            const newTCost = parseInt(document.getElementById('evt-adm-tcost').value);
+
+            let updatedQuests = [...(globalEvent.quests || [])];
+            if(newQ) updatedQuests.push({ id: "q_" + Date.now(), title: newQ });
+
+            let updatedTitles = [...(globalEvent.titles || [])];
+            if(newTName && !isNaN(newTCost)) updatedTitles.push({ name: newTName, cost: newTCost });
+
+            const payload = {
+                title: document.getElementById('evt-adm-title').value || "Seasonal Event",
+                desc: document.getElementById('evt-adm-desc').value || "",
+                bg: document.getElementById('evt-adm-bg').value || "#1e1b4b",
+                accent: document.getElementById('evt-adm-accent').value || "#ec4899",
+                coin: document.getElementById('evt-adm-coin').value || "Tokens",
+                quests: updatedQuests,
+                titles: updatedTitles
+            };
+
+            await setDoc(doc(db, "configuration", "live_event"), payload);
+            document.getElementById('evt-adm-qtitle').value = "";
+            document.getElementById('evt-adm-tname').value = "";
+            document.getElementById('evt-adm-tcost').value = "";
+            document.getElementById('event-admin-modal').style.display = 'none';
+            alert("Event system deployed successfully.");
+        };
+
+        window.completeQuest = async (qid) => {
+            if(window.currentUser.doneQuests?.includes(qid)) return alert("Quest has finished claims already.");
+            const currentWallet = window.currentUser.evtBalance || 0;
+            const updatedWallet = currentWallet + 10;
+            
+            const myRef = doc(db, "users", window.currentUser.user);
+            await updateDoc(myRef, {
+                evtBalance: updatedWallet,
+                doneQuests: arrayUnion(qid)
+            });
+
+            window.currentUser.evtBalance = updatedWallet;
+            window.currentUser.doneQuests = [...(window.currentUser.doneQuests || []), qid];
+            localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+            renderLiveEventPage();
+        };
+
+        window.buyStoreTitle = async (titleName, cost) => {
+            const currentWallet = window.currentUser.evtBalance || 0;
+            if(currentWallet < cost) return alert("Insufficient funds balance.");
+            
+            const updatedWallet = currentWallet - cost;
+            const myRef = doc(db, "users", window.currentUser.user);
+            
+            await updateDoc(myRef, {
+                evtBalance: updatedWallet,
+                activeTitle: titleName
+            });
+
+            window.currentUser.evtBalance = updatedWallet;
+            window.currentUser.activeTitle = titleName;
+            localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+            renderLiveEventPage();
+            alert(`Purchased Title: ${titleName}!`);
+        };
+
+        function renderLiveEventPage() {
+            const wallet = window.currentUser?.evtBalance || 0;
+            const coinLabel = globalEvent.coin || "Tokens";
+            document.getElementById('user-evt-wallet').innerText = `Your Balance: ${wallet} ${coinLabel}`;
+
+            document.documentElement.style.setProperty('--evt-bg', globalEvent.bg);
+            document.documentElement.style.setProperty('--evt-accent', globalEvent.accent);
+
+            const questsHTML = (globalEvent.quests || []).map(q => {
+                const finished = window.currentUser.doneQuests?.includes(q.id);
+                return `
+                    <div class="quest-item">
+                        <div>
+                            <h4 style="color:#fff;">${q.title}</h4>
+                            <p style="font-size:0.8rem; opacity:0.8;">Reward: +10 ${coinLabel}</p>
+                        </div>
+                        <button class="btn" style="margin:0; width:auto; padding:8px 14px; font-size:0.8rem; background:${finished?'#334155':''}" 
+                                onclick="window.completeQuest('${q.id}')" ${finished?'disabled':''}>
+                            ${finished ? 'Completed' : 'Claim Task'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            const shopHTML = (globalEvent.titles || []).map(t => {
+                return `
+                    <div class="shop-item">
+                        <div>
+                            <strong style="color:var(--evt-accent); letter-spacing:1px;">[${t.name}]</strong>
+                            <p style="font-size:0.85rem; opacity:0.7;">Equips under profile name</p>
+                        </div>
+                        <button class="btn" style="margin:0; width:auto; padding:8px 14px; font-size:0.8rem;" onclick="window.buyStoreTitle('${t.name}', ${t.cost})">
+                            Buy: ${t.cost} ${coinLabel}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('live-event-render').innerHTML = `
+                <div class="event-container">
+                    <h1 style="margin-bottom:6px; font-size:1.8rem; font-weight:800;">${globalEvent.title}</h1>
+                    <p style="opacity:0.9; font-size:0.95rem; margin-bottom:20px;">${globalEvent.desc}</p>
+                    
+                    <h3 style="margin-bottom:12px; font-size:1.1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">Quests Active</h3>
+                    ${questsHTML || '<p style="font-size:0.9rem; opacity:0.6;">No quest targets this setup cycle.</p>'}
+                    
+                    <h3 style="margin-top:25px; margin-bottom:12px; font-size:1.1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">Title Shop</h3>
+                    ${shopHTML || '<p style="font-size:0.9rem; opacity:0.6;">No title tiers configured.</p>'}
+                </div>
+            `;
+        }
+
+        /* --- AUTH LOGIC --- */
         window.doSignup = async () => {
             const u = document.getElementById('reg-user').value.toLowerCase().trim();
             const n = document.getElementById('reg-name').value;
             const p = document.getElementById('reg-pass').value;
             if(!u || !n || !p) return alert("Fill all fields");
-            const userData = { user: u, name: n, pass: p, pfp: "", following: [] };
+            const userData = { user: u, name: n, pass: p, pfp: "", following: [], evtBalance: 0, doneQuests: [], activeTitle: "" };
             await setDoc(doc(db, "users", u), userData);
             localStorage.setItem('sgp_session', JSON.stringify(userData));
             location.reload();
@@ -335,18 +559,34 @@
             } else { alert("Login failed"); }
         };
 
+        /* --- RE-ACTIVATED DATABASE MONITORS --- */
         onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (s) => {
-            allPosts = s.docs.map(d => ({ id: d.id, ...d.data() }));
+            allPosts = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !(p.reports?.length >= 3)); 
             window.renderFeed(); window.renderVideoHub();
             if(document.getElementById('following-screen').classList.contains('active')) renderFollowingFeed();
+            if(document.getElementById('profile-screen').classList.contains('active')) {
+                const currentProfileHandle = document.getElementById('view-handle').innerText.replace('@','');
+                window.viewProfile(currentProfileHandle);
+            }
         });
 
         onSnapshot(collection(db, "users"), (s) => {
             s.forEach(d => allUsers[d.id] = d.data());
+            if(window.currentUser && allUsers[window.currentUser.user]) {
+                window.currentUser = allUsers[window.currentUser.user];
+                localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+            }
+        });
+
+        onSnapshot(doc(db, "configuration", "live_event"), (s) => {
+            if(s.exists()) {
+                globalEvent = s.data();
+                if(document.getElementById('event-screen').classList.contains('active')) renderLiveEventPage();
+            }
         });
 
         window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
-        window.closePostModal = () => { document.getElementById('post-modal').style.display = 'none'; pendingMedia = null; document.getElementById('file-status').innerText = "";};
+        window.closePostModal = () => { document.getElementById('post-modal').style.display = 'none'; pendingMedia = null; document.getElementById('file-status').innerText = ""; };
 
         window.onload = () => { if(window.currentUser) window.showScreen('feed-screen'); else window.showScreen('signup-screen'); };
     </script>
