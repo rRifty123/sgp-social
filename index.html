@@ -48,7 +48,7 @@
         .nav-btn { background: none; border: none; color: var(--text-dim); font-weight: bold; cursor: pointer; padding: 10px 16px; border-radius: 20px; transition: 0.3s; font-size: 0.95rem; }
         .nav-btn.active-tab { color: white; background: var(--primary); box-shadow: 0 0 15px var(--primary); }
 
-        .btn { padding: 15px; border-radius: 14px; border: none; cursor: pointer; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; margin: 8px auto; width: 90%; align-self: center; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center;}
+        .btn { padding: 15px; border-radius: 14px; border: none; cursor: pointer; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; margin: 8px auto; width: 90%; align-self: center; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; display: block; text-decoration: none;}
         .btn:active { transform: scale(0.96); opacity: 0.9; }
 
         .input-box { width: 90%; padding: 16px; margin: 10px auto; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text); border-radius: 14px; display: block; font-size: 16px; outline: none; }
@@ -63,7 +63,7 @@
         .pfp-small { width:35px; height:35px; border-radius:50%; object-fit: cover; background: var(--primary); }
 
         .short-card { min-width: 170px; height: 300px; background: #000; border-radius: 22px; overflow: hidden; flex-shrink: 0; position: relative; }
-        #post-modal, #event-admin-modal, #settings-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; overflow-y: auto; }
+        #post-modal, #event-admin-modal, #settings-modal, #title-admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; overflow-y: auto; }
 
         .event-container { width: 92%; margin: 20px auto; padding: 20px; border-radius: 24px; background: var(--evt-bg); color: var(--evt-text); border: 1px solid rgba(255,255,255,0.1); }
         .quest-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--evt-accent); }
@@ -138,6 +138,29 @@
             <div id="live-event-render"></div>
         </div>
 
+        <!-- Shop Tab Screen -->
+        <div id="shop-screen" class="screen">
+            <div style="padding: 40px 25px 10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2>REGPoints Vault Store</h2>
+                    <p style="color:var(--text-dim)" id="user-points-wallet">Balance: 0 Points</p>
+                </div>
+                <span onclick="window.verifyTitleAdmin()" style="font-size:1rem; cursor:pointer; opacity:0.3; padding:5px;">⚙️</span>
+            </div>
+            
+            <div style="padding: 10px 20px;">
+                <h3 style="margin-bottom:12px; font-size:1.1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">Microtransactions Store</h3>
+                <a href="https://buy.stripe.com/test_4gM28r1xy1G14I26cxaEE00" target="_blank" class="btn" style="margin-bottom:10px; text-shadow: 0 1px 2px rgba(0,0,0,0.4);">Buy 50 Points (£1)</a>
+                <a href="https://buy.stripe.com/test_8x25kDekk1G14I230laEE01" target="_blank" class="btn" style="margin-bottom:25px; text-shadow: 0 1px 2px rgba(0,0,0,0.4);">Buy 100 Points (£2)</a>
+                
+                <h3 style="margin-bottom:12px; font-size:1.1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">Daily Quests</h3>
+                <div id="daily-quests-render" style="margin-bottom:25px;"></div>
+                
+                <h3 style="margin-bottom:12px; font-size:1.1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">Titles Shop</h3>
+                <div id="global-titles-shop-render"></div>
+            </div>
+        </div>
+
         <!-- Profile -->
         <div id="profile-screen" class="screen">
             <div id="profile-header" style="text-align: center; padding: 50px 20px; background: linear-gradient(to bottom, var(--surface), transparent);">
@@ -160,6 +183,7 @@
             <div class="nav-item" onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2.5rem;">+</div>
             <div class="nav-item" onclick="window.showScreen('following-screen')">👣</div>
             <div class="nav-item" onclick="window.showScreen('event-screen')">📅</div>
+            <div class="nav-item" onclick="window.showScreen('shop-screen')">🛒</div>
             <div class="nav-item" onclick="window.viewProfile(window.currentUser?.user)">👤</div>
         </nav>
     </div>
@@ -215,7 +239,7 @@
             <div id="set-titles-inventory" style="padding: 10px 20px;"></div>
         </div>
 
-        <button class="btn" style="margin-top:30px;" onclick="window.saveAccountSettings()">Save Configurations</button>
+        <button class="btn" onclick="window.saveAccountSettings()">Save Configurations</button>
         <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('settings-modal').style.display='none'">Cancel</button>
     </div>
 
@@ -243,6 +267,18 @@
         <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('event-admin-modal').style.display='none'">Exit Engine</button>
     </div>
 
+    <!-- Title Creator Studio Panel (Code 080112) -->
+    <div id="title-admin-modal">
+        <h2>Title Creator Engine</h2>
+        <p style="color:var(--text-dim); margin-bottom:20px;">Add permanent titles to the REGPoints Store</p>
+        
+        <input type="text" id="tstore-adm-name" class="input-box" placeholder="Title Name (e.g. LEGEND)">
+        <input type="number" id="tstore-adm-cost" class="input-box" placeholder="REGPoints Cost Price">
+
+        <button class="btn" style="margin-top:20px;" onclick="window.saveStoreTitle()">Publish Title</button>
+        <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('title-admin-modal').style.display='none'">Close Dashboard</button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -263,6 +299,7 @@
         let allUsers = {};
         let allPosts = [];
         let globalEvent = { title: "No Event Active", desc: "Check back later", bg: "#1e293b", accent: "#ec4899", coin: "Tokens", quests: [], titles: [] };
+        let storeTitlesConfig = [];
         let pendingMedia = null;
         let mediaType = 'text';
         let feedFilter = 'foryou';
@@ -274,6 +311,7 @@
             document.querySelectorAll('video').forEach(v => v.pause());
             if(id === 'following-screen') renderFollowingFeed();
             if(id === 'event-screen') renderLiveEventPage();
+            if(id === 'shop-screen') renderShopPage();
         };
 
         window.setFeedFilter = (f) => {
@@ -321,6 +359,7 @@
             } else {
                 await updateDoc(myRef, { following: arrayUnion(targetUser) });
                 window.currentUser.following = [...(window.currentUser.following || []), targetUser];
+                window.trackDailyQuestProgress('follow');
             }
             localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
             window.viewProfile(targetUser);
@@ -347,6 +386,11 @@
             const p = allPosts.find(x => x.id === id);
             const active = p[type]?.includes(window.currentUser.user);
             await updateDoc(ref, { [type]: active ? arrayRemove(window.currentUser.user) : arrayUnion(window.currentUser.user) });
+            
+            if(!active) {
+                if(type === 'hearts') window.trackDailyQuestProgress('heart');
+                if(type === 'breaks') window.trackDailyQuestProgress('break');
+            }
         };
 
         window.reportPost = async (id) => {
@@ -687,13 +731,186 @@
             `;
         }
 
+
+        /* --- PERSISTENT REGPOINTS & DAILY QUEST ENGINE --- */
+        const DAILY_QUESTS_POOL = [
+            { id: "dq_heart_10", text: "Heart 10 posts", target: 10, type: "heart" },
+            { id: "dq_break_10", text: "Broken heart 10 posts", target: 10, type: "break" },
+            { id: "dq_follow_1", text: "Follow someone", target: 1, type: "follow" },
+            { id: "dq_follow_2", text: "Follow two people", target: 2, type: "follow" },
+            { id: "dq_heart_5", text: "Heart 5 posts", target: 5, type: "heart" },
+            { id: "dq_heart_1", text: "Heart 1 post", target: 1, type: "heart" }
+        ];
+
+        function getTodayString() {
+            const d = new Date();
+            return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+        }
+
+        function verifyAndGenerateDailyQuests() {
+            const today = getTodayString();
+            if (window.currentUser.dailyQuestsDate !== today) {
+                // Pick 3 pseudo-random quests from pool based on the day
+                const dayNumeric = new Date().getDate();
+                const shuffled = [...DAILY_QUESTS_POOL].sort((a,b) => (a.id.charCodeAt(4) || 1) * dayNumeric % 3 - 1);
+                const selectedQuests = shuffled.slice(0, 3).map(q => ({
+                    id: q.id, text: q.text, target: q.target, type: q.type, progress: 0, claimed: false
+                }));
+
+                const myRef = doc(db, "users", window.currentUser.user);
+                updateDoc(myRef, {
+                    dailyQuestsDate: today,
+                    dailyQuests: selectedQuests
+                });
+                window.currentUser.dailyQuestsDate = today;
+                window.currentUser.dailyQuests = selectedQuests;
+                localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+            }
+        }
+
+        window.trackDailyQuestProgress = async (actionType) => {
+            if (!window.currentUser || !window.currentUser.dailyQuests) return;
+            let holdsUpdates = false;
+            const updatedQuests = window.currentUser.dailyQuests.map(q => {
+                if (q.type === actionType && q.progress < q.target && !q.claimed) {
+                    q.progress += 1;
+                    holdsUpdates = true;
+                }
+                return q;
+            });
+
+            if (holdsUpdates) {
+                const myRef = doc(db, "users", window.currentUser.user);
+                await updateDoc(myRef, { dailyQuests: updatedQuests });
+                window.currentUser.dailyQuests = updatedQuests;
+                localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+                if(document.getElementById('shop-screen').classList.contains('active')) renderShopPage();
+            }
+        };
+
+        window.claimDailyQuestPoints = async (qid) => {
+            const quest = window.currentUser.dailyQuests?.find(q => q.id === qid);
+            if (!quest || quest.progress < quest.target || quest.claimed) return;
+
+            const currentPoints = window.currentUser.pointsBalance || 0;
+            const newPoints = currentPoints + 5;
+
+            const updatedQuests = window.currentUser.dailyQuests.map(q => {
+                if (q.id === qid) q.claimed = true;
+                return q;
+            });
+
+            const myRef = doc(db, "users", window.currentUser.user);
+            await updateDoc(myRef, {
+                pointsBalance: newPoints,
+                dailyQuests: updatedQuests
+            });
+
+            window.currentUser.pointsBalance = newPoints;
+            window.currentUser.dailyQuests = updatedQuests;
+            localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+            renderShopPage();
+            alert("Claimed 5 REGPoints successfully!");
+        };
+
+        window.verifyTitleAdmin = () => {
+            const pass = prompt("Enter Administration Clearance Key:");
+            if(pass === "080112") {
+                document.getElementById('title-admin-modal').style.display = 'flex';
+            } else if (pass !== null) {
+                alert("Clearance access denied.");
+            }
+        };
+
+        window.saveStoreTitle = async () => {
+            const name = document.getElementById('tstore-adm-name').value.trim().toUpperCase();
+            const cost = parseInt(document.getElementById('tstore-adm-cost').value);
+
+            if(!name || isNaN(cost)) return alert("Please enter valid parameters.");
+
+            await addDoc(collection(db, "store_titles"), {
+                name: name, cost: cost, createdAt: serverTimestamp()
+            });
+
+            document.getElementById('tstore-adm-name').value = "";
+            document.getElementById('tstore-adm-cost').value = "";
+            document.getElementById('title-admin-modal').style.display = 'none';
+            alert("Title added to global market successfully!");
+        };
+
+        window.purchasePointsStoreTitle = async (titleName, cost) => {
+            const currentPoints = window.currentUser.pointsBalance || 0;
+            if(currentPoints < cost) return alert("Insufficient REGPoints balance.");
+
+            const updatedPoints = currentPoints - cost;
+            const myRef = doc(db, "users", window.currentUser.user);
+
+            await updateDoc(myRef, {
+                pointsBalance: updatedPoints,
+                activeTitle: titleName,
+                earnedTitles: arrayUnion(titleName)
+            });
+
+            window.currentUser.pointsBalance = updatedPoints;
+            window.currentUser.activeTitle = titleName;
+            window.currentUser.earnedTitles = [...(window.currentUser.earnedTitles || []), titleName];
+            localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+            renderShopPage();
+            alert(`Permanently Unlocked & Equipped Title: ${titleName}!`);
+        };
+
+        function renderShopPage() {
+            if(!window.currentUser) return;
+            verifyAndGenerateDailyQuests();
+
+            const pointsWallet = window.currentUser.pointsBalance || 0;
+            document.getElementById('user-points-wallet').innerText = `Balance: ${pointsWallet} REGPoints`;
+
+            // Render Daily Quests
+            const dqHTML = (window.currentUser.dailyQuests || []).map(q => {
+                const complete = q.progress >= q.target;
+                return `
+                    <div class="quest-item" style="border-left-color: var(--primary);">
+                        <div>
+                            <h4 style="color:#fff;">${q.text}</h4>
+                            <p style="font-size:0.8rem; opacity:0.8;">Progress: ${q.progress}/${q.target} (+5 Points)</p>
+                        </div>
+                        <button class="btn" style="margin:0; width:auto; padding:8px 14px; font-size:0.8rem; background:${q.claimed ? '#334155' : (complete ? '#22c55e' : '#1e293b')}"
+                                onclick="window.claimDailyQuestPoints('${q.id}')" ${q.claimed || !complete ? 'disabled' : ''}>
+                            ${q.claimed ? 'Claimed' : (complete ? 'Claim' : 'Locked')}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('daily-quests-render').innerHTML = dqHTML || '<p style="opacity:0.6; font-size:0.9rem;">Loading daily cycles...</p>';
+
+            // Render Titles Shop
+            const titlesHTML = storeTitlesConfig.map(t => {
+                const alreadyOwned = window.currentUser.earnedTitles?.includes(t.name);
+                return `
+                    <div class="shop-item">
+                        <div>
+                            <strong style="color:var(--primary); letter-spacing:1px;">[${t.name}]</strong>
+                            <p style="font-size:0.85rem; opacity:0.7;">Permanent unlocked tier badge</p>
+                        </div>
+                        <button class="btn" style="margin:0; width:auto; padding:8px 14px; font-size:0.8rem; background:${alreadyOwned ? '#22c55e' : ''}" 
+                                onclick="${alreadyOwned ? '' : `window.purchasePointsStoreTitle('${t.name}', ${t.cost})`}" ${alreadyOwned ? 'disabled' : ''}>
+                            ${alreadyOwned ? 'Owned' : `Buy: ${t.cost} Pts`}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('global-titles-shop-render').innerHTML = titlesHTML || '<p style="opacity:0.6; font-size:0.9rem;">No titles uploaded to market engine yet.</p>';
+        }
+
+
         /* --- AUTH LOGIC --- */
         window.doSignup = async () => {
             const u = document.getElementById('reg-user').value.toLowerCase().trim();
             const n = document.getElementById('reg-name').value;
             const p = document.getElementById('reg-pass').value;
             if(!u || !n || !p) return alert("Fill all fields");
-            const userData = { user: u, name: n, pass: p, pfp: "", following: [], evtBalance: 0, doneQuests: [], activeTitle: "", earnedTitles: [], privacy: "all" };
+            const userData = { user: u, name: n, pass: p, pfp: "", following: [], evtBalance: 0, pointsBalance: 0, doneQuests: [], activeTitle: "", earnedTitles: [], privacy: "all", dailyQuestsDate: "", dailyQuests: [] };
             await setDoc(doc(db, "users", u), userData);
             localStorage.setItem('sgp_session', JSON.stringify(userData));
             location.reload();
@@ -725,6 +942,7 @@
             if(window.currentUser && allUsers[window.currentUser.user]) {
                 window.currentUser = allUsers[window.currentUser.user];
                 localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+                if(document.getElementById('shop-screen').classList.contains('active')) renderShopPage();
             }
         });
 
@@ -733,6 +951,11 @@
                 globalEvent = s.data();
                 if(document.getElementById('event-screen').classList.contains('active')) renderLiveEventPage();
             }
+        });
+
+        onSnapshot(query(collection(db, "store_titles"), orderBy("createdAt", "desc")), (s) => {
+            storeTitlesConfig = s.docs.map(d => d.data());
+            if(document.getElementById('shop-screen').classList.contains('active')) renderShopPage();
         });
 
         window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
