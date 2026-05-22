@@ -44,9 +44,81 @@
         .active { display: flex !important; flex-direction: column; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .top-nav { display: flex; justify-content: space-around; padding: 25px 15px 15px 15px; background: var(--glass); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 10; margin-top: env(safe-area-inset-top, 20px); }
-        .nav-btn { background: none; border: none; color: var(--text-dim); font-weight: bold; cursor: pointer; padding: 10px 16px; border-radius: 20px; transition: 0.3s; font-size: 0.95rem; }
-        .nav-btn.active-tab { color: white; background: var(--primary); box-shadow: 0 0 15px var(--primary); }
+        /* Modified Wireframe Layout Header */
+        .app-header-layout {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-top: env(safe-area-inset-top, 20px);
+            position: relative;
+        }
+        .header-logo-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+        .pill-capsule-nav {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 25px;
+            padding: 2px;
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 55%;
+        }
+        .pill-tab-item {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .pill-tab-item.active-pill {
+            color: white;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        .avatar-action-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .header-avatar-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            cursor: pointer;
+        }
+        .header-msg-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: var(--accent);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            border: 2px solid var(--bg);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent);
+        }
 
         .btn { padding: 15px; border-radius: 14px; border: none; cursor: pointer; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; margin: 8px auto; width: 90%; align-self: center; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; display: block; text-decoration: none;}
         .btn:active { transform: scale(0.96); opacity: 0.9; }
@@ -63,7 +135,7 @@
         .pfp-small { width:35px; height:35px; border-radius:50%; object-fit: cover; background: var(--primary); }
 
         .short-card { min-width: 170px; height: 300px; background: #000; border-radius: 22px; overflow: hidden; flex-shrink: 0; position: relative; }
-        #post-modal, #event-admin-modal, #settings-modal, #title-admin-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; overflow-y: auto; }
+        #post-modal, #event-admin-modal, #settings-modal, #title-admin-modal, #chat-modal, #friend-request-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; overflow-y: auto; }
 
         .event-container { width: 92%; margin: 20px auto; padding: 20px; border-radius: 24px; background: var(--evt-bg); color: var(--evt-text); border: 1px solid rgba(255,255,255,0.1); }
         .quest-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--evt-accent); }
@@ -75,12 +147,35 @@
         .settings-panel { display: none; }
         .settings-panel.active { display: block; }
         .title-badge { background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 10px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+
+        /* WhatsApp Style UI Elements */
+        .chat-list-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--glass); margin-bottom: 8px; border-radius: 14px; cursor: pointer; width:92%; align-self:center; border: 1px solid rgba(255,255,255,0.05); }
+        .chat-bubble-container { display: flex; flex-direction: column; gap: 10px; padding: 15px; overflow-y: auto; flex: 1; background: rgba(0,0,0,0.2); border-radius: 16px; margin-bottom: 15px; }
+        .chat-bubble { max-width: 75%; padding: 12px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative; word-wrap: break-word; }
+        .chat-bubble.sent { background: var(--primary); align-self: flex-end; color: white; border-bottom-right-radius: 4px; }
+        .chat-bubble.received { background: var(--surface); align-self: flex-start; color: var(--text); border-bottom-left-radius: 4px; }
+        .chat-timestamp { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 4px; text-align: right; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
-        <!-- Auth Screens -->
+        <div id="global-wireframe-header" class="app-header-layout" style="display:none;">
+            <div class="header-logo-title">SGP</div>
+            
+            <div class="pill-capsule-nav">
+                <button class="pill-tab-item" id="pill-following" onclick="window.setFeedFilter('following_pill')">Following</button>
+                <button class="pill-tab-item active-pill" id="pill-foryou" onclick="window.setFeedFilter('foryou_pill')">For You</button>
+                <button class="pill-tab-item" id="pill-recent" onclick="window.setFeedFilter('recent_pill')">Recents</button>
+                <button class="pill-tab-item" id="pill-search" onclick="window.setFeedFilter('search_pill')">Search</button>
+            </div>
+
+            <div class="avatar-action-wrapper">
+                <img id="header-profile-pfp" class="header-avatar-btn" src="https://via.placeholder.com/55" onclick="window.viewProfile(window.currentUser?.user)">
+                <div class="header-msg-badge" onclick="window.showScreen('messaging-hub-screen')">💬</div>
+            </div>
+        </div>
+
         <div id="signup-screen" class="screen">
             <div style="margin:auto; width:100%; text-align:center; padding: 20px;">
                 <h1 style="font-size: 4rem; background: linear-gradient(var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SGP</h1>
@@ -102,33 +197,33 @@
             </div>
         </div>
 
-        <!-- Feed -->
         <div id="feed-screen" class="screen">
-            <div class="top-nav">
-                <button class="nav-btn" onclick="window.setFeedFilter('search')">🔍 Search</button>
-                <button class="nav-btn active-tab" id="btn-feed" onclick="window.setFeedFilter('foryou')">For You</button>
-                <button class="nav-btn" id="btn-recent" onclick="window.setFeedFilter('recent')">Recent</button>
-            </div>
-            <div id="search-bar-container" style="display:none; padding: 10px;">
+            <div id="search-bar-container" style="display:none; padding: 10px 20px;">
                 <input type="text" id="search-input" class="input-box" placeholder="Find users..." oninput="window.renderFeed()">
             </div>
             <div id="feed-items" style="display: flex; flex-direction: column; padding-top: 15px;"></div>
         </div>
 
-        <!-- Video Hub -->
         <div id="video-hub-screen" class="screen">
             <div id="video-hub-container"></div>
         </div>
 
-        <!-- Following Tab -->
-        <div id="following-screen" class="screen">
-            <div style="padding: 40px 25px 10px;"><h2>Following</h2><p style="color:var(--text-dim)">Latest from people you follow</p></div>
-            <div id="following-feed" style="display: flex; flex-direction: column; padding-top: 15px;"></div>
+        <div id="messaging-hub-screen" class="screen">
+            <div style="padding: 30px 25px 15px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2>Chats</h2>
+                    <p style="color:var(--text-dim)">Connect with your added friends</p>
+                </div>
+                <button class="btn" style="width:auto; margin:0; padding:10px 15px; font-size:1.3rem; border-radius:50%;" onclick="window.openFriendRequestModal()">+</button>
+            </div>
+            
+            <div id="pending-requests-section" style="padding:0 25px; margin-bottom:15px;"></div>
+            
+            <div id="active-chats-list" style="display:flex; flex-direction:column; padding-top:10px;"></div>
         </div>
 
-        <!-- Event Screen -->
         <div id="event-screen" class="screen">
-            <div style="padding: 40px 25px 5px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="padding: 30px 25px 5px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <h2>Live Hub Event</h2>
                     <p style="color:var(--text-dim)" id="user-evt-wallet">Balance: 0 Tokens</p>
@@ -138,21 +233,16 @@
             <div id="live-event-render"></div>
         </div>
 
-        <!-- Shop Tab Screen -->
         <div id="shop-screen" class="screen">
-            <div style="padding: 40px 25px 10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="padding: 30px 25px 10px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <h2>REGPoints Vault Store</h2>
-                    <p style="color:var(--text-dim)" id="user-points-wallet">Balance: 0 Points</p>
+                    <h2>SGP Points Vault</h2>
+                    <p style="color:var(--text-dim)" id="user-points-wallet">Balance: 0 SGP Points</p>
                 </div>
                 <span onclick="window.verifyTitleAdmin()" style="font-size:1rem; cursor:pointer; opacity:0.3; padding:5px;">⚙️</span>
             </div>
             
             <div style="padding: 10px 20px;">
-                <h3 style="margin-bottom:12px; font-size:1.1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">Microtransactions Store</h3>
-                <a href="https://buy.stripe.com/test_4gM28r1xy1G14I26cxaEE00" target="_blank" class="btn" style="margin-bottom:10px; text-shadow: 0 1px 2px rgba(0,0,0,0.4);">Buy 50 Points (£1)</a>
-                <a href="https://buy.stripe.com/test_8x25kDekk1G14I230laEE01" target="_blank" class="btn" style="margin-bottom:25px; text-shadow: 0 1px 2px rgba(0,0,0,0.4);">Buy 100 Points (£2)</a>
-                
                 <h3 style="margin-bottom:12px; font-size:1.1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">Daily Quests</h3>
                 <div id="daily-quests-render" style="margin-bottom:25px;"></div>
                 
@@ -161,9 +251,8 @@
             </div>
         </div>
 
-        <!-- Profile -->
         <div id="profile-screen" class="screen">
-            <div id="profile-header" style="text-align: center; padding: 50px 20px; background: linear-gradient(to bottom, var(--surface), transparent);">
+            <div id="profile-header" style="text-align: center; padding: 30px 20px; background: linear-gradient(to bottom, var(--surface), transparent);">
                 <img id="view-pfp" class="pfp-large" src="https://via.placeholder.com/100">
                 <h2 id="view-name">...</h2>
                 <p id="view-handle" style="color: var(--text-dim); margin-bottom:4px;">@user</p>
@@ -176,32 +265,51 @@
             <div id="user-posts-container"></div>
         </div>
 
-        <!-- Bottom Nav -->
         <nav class="nav-bar">
             <div class="nav-item" onclick="window.showScreen('feed-screen')">🏠</div>
             <div class="nav-item" onclick="window.showScreen('video-hub-screen')">🎬</div>
             <div class="nav-item" onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2.5rem;">+</div>
-            <div class="nav-item" onclick="window.showScreen('following-screen')">👣</div>
             <div class="nav-item" onclick="window.showScreen('event-screen')">📅</div>
             <div class="nav-item" onclick="window.showScreen('shop-screen')">🛒</div>
-            <div class="nav-item" onclick="window.viewProfile(window.currentUser?.user)">👤</div>
         </nav>
     </div>
 
-    <!-- Create Post Modal -->
     <div id="post-modal">
         <h2 style="margin-bottom: 20px;">Share Content</h2>
         <textarea id="post-text" class="input-box" style="height: 140px;" placeholder="What's on your mind?"></textarea>
         <div id="file-status" style="color:var(--primary); text-align:center; font-weight:bold; margin: 10px;"></div>
         <button class="btn" onclick="document.getElementById('img-in').click()" style="background:#334155;">📷 Photo</button>
-        <button class="btn" onclick="document.getElementById('vid-in').click()" style="background:#334155;">🎥 Video (HD)</button>
+        <button class="btn" onclick="document.getElementById('vid-in').click()" style="background:#334155;">🎥 Video (HD Max Compression)</button>
         <input type="file" id="img-in" accept="image/*" hidden onchange="window.handleMedia(this, 'image')">
         <input type="file" id="vid-in" accept="video/*" hidden onchange="window.handleMedia(this, 'video')">
         <button id="post-btn" class="btn" onclick="window.makePost()">Post Now</button>
         <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="window.closePostModal()">Cancel</button>
     </div>
 
-    <!-- Account Settings Dashboard Modal -->
+    <div id="chat-modal">
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">
+            <button class="btn" style="width:auto; margin:0; padding:8px 15px; background:var(--surface);" onclick="window.closeChatModal()">⬅</button>
+            <img id="chat-target-pfp" class="pfp-small" src="">
+            <div>
+                <h3 id="chat-target-name">Chat</h3>
+                <p id="chat-target-handle" style="font-size:0.8rem; color:var(--text-dim);"></p>
+            </div>
+        </div>
+        <div id="chat-bubbles-render-target" class="chat-bubble-container"></div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <input type="text" id="chat-msg-input" class="input-box" style="margin:0;" placeholder="Type a message...">
+            <button class="btn" style="width:auto; margin:0; padding:15px 20px;" onclick="window.sendDirectMessage()">Send</button>
+        </div>
+    </div>
+
+    <div id="friend-request-modal">
+        <h2>Find Friends</h2>
+        <p style="color:var(--text-dim); margin-bottom:15px;">Search username to issue standard requests</p>
+        <input type="text" id="friend-search-input" class="input-box" placeholder="Enter exact target handle...">
+        <button class="btn" onclick="window.sendFriendRequest()">Send Connection Request</button>
+        <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('friend-request-modal').style.display='none'">Cancel</button>
+    </div>
+
     <div id="settings-modal">
         <h2 style="margin-bottom: 15px;">Account Settings</h2>
         <div class="settings-tab-bar">
@@ -210,22 +318,18 @@
             <div class="settings-tab" onclick="window.switchSettingsTab('tit')">Titles</div>
         </div>
 
-        <!-- General Panel -->
         <div id="set-panel-gen" class="settings-panel active">
             <label style="padding-left:20px; font-size:0.85rem; color:var(--text-dim)">Display Name</label>
             <input type="text" id="set-name" class="input-box" placeholder="Your Name">
             <label style="padding-left:20px; font-size:0.85rem; color:var(--text-dim)">Update Password</label>
             <input type="password" id="set-pass" class="input-box" placeholder="New Password">
-            
             <div style="display:flex; justify-content:space-between; align-items:center; width:90%; margin:20px auto;">
-                <strong>Light / Dark Toggler</strong>
+                <strong>Theme Toggler</strong>
                 <button class="btn" style="width:auto; margin:0; padding:10px 20px;" onclick="window.toggleThemeLayout()">Switch Mode</button>
             </div>
         </div>
 
-        <!-- Privacy Panel -->
         <div id="set-panel-priv" class="settings-panel">
-            <p style="padding:0 20px 10px; color:var(--text-dim); font-size:0.9rem;">Configure who can see future posts you broadcast:</p>
             <select id="set-privacy" class="input-box" style="background:var(--surface); color:var(--text);">
                 <option value="all">All (Public Link Feed)</option>
                 <option value="followers">Followers (Only those following you)</option>
@@ -233,9 +337,7 @@
             </select>
         </div>
 
-        <!-- Titles Management Panel -->
         <div id="set-panel-tit" class="settings-panel">
-            <p style="padding:0 20px 10px; color:var(--text-dim); font-size:0.9rem;">Your earned event titles inventory container:</p>
             <div id="set-titles-inventory" style="padding: 10px 20px;"></div>
         </div>
 
@@ -243,45 +345,32 @@
         <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('settings-modal').style.display='none'">Cancel</button>
     </div>
 
-    <!-- Event Creator Customizer Studio Panel -->
     <div id="event-admin-modal">
         <h2>Event Customizer Hub</h2>
-        <p style="color:var(--text-dim); margin-bottom:20px;">Design current globally synced event criteria</p>
-        
-        <h3>1. Custom Visual Theme</h3>
         <input type="text" id="evt-adm-title" class="input-box" placeholder="Event Name">
         <input type="text" id="evt-adm-desc" class="input-box" placeholder="Description Text">
-        <input type="text" id="evt-adm-bg" class="input-box" placeholder="Background Color Hex (e.g. #1e1b4b)">
-        <input type="text" id="evt-adm-accent" class="input-box" placeholder="Accent Glow Color Hex">
-        <input type="text" id="evt-adm-coin" class="input-box" placeholder="Currency Name (e.g. Gems)">
-
-        <h3 style="margin-top:20px;">2. Add New Quest (+10 Coins reward)</h3>
+        <input type="text" id="evt-adm-bg" class="input-box" placeholder="Background Color Hex">
+        <input type="text" id="evt-adm-accent" class="input-box" placeholder="Accent Glow Hex">
+        <input type="text" id="evt-adm-coin" class="input-box" placeholder="Currency Name">
         <input type="text" id="evt-adm-qtitle" class="input-box" placeholder="Quest Action Name">
-
-        <h3 style="margin-top:20px;">3. Add Store Title Reward</h3>
-        <input type="text" id="evt-adm-tname" class="input-box" placeholder="Title Value (e.g. ELITE)">
-        <input type="number" id="evt-adm-tcost" class="input-box" placeholder="Title Coin Price Code">
-
-        <button class="btn" style="margin-top:20px;" onclick="window.saveGlobalEvent()">Deploy Event Live</button>
+        <input type="text" id="evt-adm-tname" class="input-box" placeholder="Title Value">
+        <input type="number" id="evt-adm-tcost" class="input-box" placeholder="Title Coin Price">
+        <button class="btn" onclick="window.saveGlobalEvent()">Deploy Event Live</button>
         <button class="btn" style="background:#ef4444;" onclick="window.terminateActiveEvent()">End & Wipe Event Content</button>
         <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('event-admin-modal').style.display='none'">Exit Engine</button>
     </div>
 
-    <!-- Title Creator Studio Panel (Code 080112) -->
     <div id="title-admin-modal">
         <h2>Title Creator Engine</h2>
-        <p style="color:var(--text-dim); margin-bottom:20px;">Add permanent titles to the REGPoints Store</p>
-        
-        <input type="text" id="tstore-adm-name" class="input-box" placeholder="Title Name (e.g. LEGEND)">
-        <input type="number" id="tstore-adm-cost" class="input-box" placeholder="REGPoints Cost Price">
-
-        <button class="btn" style="margin-top:20px;" onclick="window.saveStoreTitle()">Publish Title</button>
+        <input type="text" id="tstore-adm-name" class="input-box" placeholder="Title Name">
+        <input type="number" id="tstore-adm-cost" class="input-box" placeholder="SGP Points Cost Price">
+        <button class="btn" onclick="window.saveStoreTitle()">Publish Title</button>
         <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('title-admin-modal').style.display='none'">Close Dashboard</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
@@ -298,42 +387,88 @@
         window.currentUser = JSON.parse(localStorage.getItem('sgp_session')) || null;
         let allUsers = {};
         let allPosts = [];
+        let activeChatFriend = null;
+        let unsubscribeChat = null;
         let globalEvent = { title: "No Event Active", desc: "Check back later", bg: "#1e293b", accent: "#ec4899", coin: "Tokens", quests: [], titles: [] };
         let storeTitlesConfig = [];
         let pendingMedia = null;
         let mediaType = 'text';
-        let feedFilter = 'foryou';
+        let feedFilter = 'foryou_pill';
 
         window.showScreen = (id) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const target = document.getElementById(id);
             if(target) target.classList.add('active');
             document.querySelectorAll('video').forEach(v => v.pause());
-            if(id === 'following-screen') renderFollowingFeed();
+            
+            // Toggle visibility of global Wireframe header depending on auth screens status
+            const headerBlock = document.getElementById('global-wireframe-header');
+            if(id === 'signup-screen' || id === 'login-screen') {
+                headerBlock.style.display = 'none';
+            } else {
+                headerBlock.style.display = 'flex';
+                // Sync top layout pfp rendering asset safely
+                if(window.currentUser) {
+                    document.getElementById('header-profile-pfp').src = window.currentUser.pfp || "https://via.placeholder.com/55";
+                }
+            }
+
+            if(id === 'messaging-hub-screen') renderMessagingHub();
             if(id === 'event-screen') renderLiveEventPage();
             if(id === 'shop-screen') renderShopPage();
         };
 
         window.setFeedFilter = (f) => {
             feedFilter = f;
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-tab'));
-            if(f === 'search') document.querySelector('[onclick*="search"]').classList.add('active-tab');
-            if(f === 'foryou') document.getElementById('btn-feed').classList.add('active-tab');
-            if(f === 'recent') document.getElementById('btn-recent').classList.add('active-tab');
-            document.getElementById('search-bar-container').style.display = f === 'search' ? 'block' : 'none';
+            document.querySelectorAll('.pill-tab-item').forEach(b => b.classList.remove('active-pill'));
+            
+            if(f === 'search_pill') {
+                document.getElementById('pill-search').classList.add('active-pill');
+                document.getElementById('search-bar-container').style.display = 'block';
+            } else {
+                document.getElementById('search-bar-container').style.display = 'none';
+                if(f === 'foryou_pill') document.getElementById('pill-foryou').classList.add('active-pill');
+                if(f === 'recent_pill') document.getElementById('pill-recent').classList.add('active-pill');
+                if(f === 'following_pill') document.getElementById('pill-following').classList.add('active-pill');
+            }
+            window.showScreen('feed-screen');
             window.renderFeed();
         };
 
+        // Resolution Optimization & Dynamic Resampling canvas for larger file size upload handles
         window.handleMedia = (input, type) => {
             const file = input.files[0];
             if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => { 
-                pendingMedia = e.target.result; 
-                mediaType = type;
-                document.getElementById('file-status').innerText = type.toUpperCase() + " READY";
-            };
-            reader.readAsDataURL(file);
+
+            document.getElementById('file-status').innerText = "COMPRESSING MEDIA ENGINE RUNNING...";
+            
+            if (type === 'image') {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width; let height = img.height;
+                        if(width > 1200) { height *= 1200 / width; width = 1200; }
+                        canvas.width = width; canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                        pendingMedia = canvas.toDataURL('image/jpeg', 0.6); // Compress down directly
+                        mediaType = 'image';
+                        document.getElementById('file-status').innerText = "HD IMAGE OPTIMIZED & READY";
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else if (type === 'video') {
+                // Read chunks of file directly into memory wrapper base64 bypass string rules
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    pendingMedia = e.target.result;
+                    mediaType = 'video';
+                    document.getElementById('file-status').innerText = "VIDEO BUFFER STREAM ALLOCATED READY";
+                };
+                reader.readAsDataURL(file);
+            }
         };
 
         window.updatePFP = async (input) => {
@@ -346,6 +481,7 @@
                 window.currentUser.pfp = base64;
                 localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
                 document.getElementById('view-pfp').src = base64;
+                document.getElementById('header-profile-pfp').src = base64;
             };
             reader.readAsDataURL(file);
         };
@@ -367,7 +503,7 @@
 
         window.makePost = async () => {
             const btn = document.getElementById('post-btn');
-            btn.disabled = true; btn.innerText = "Processing HD Media...";
+            btn.disabled = true; btn.innerText = "Broadcasting Stream to Cloud...";
             try {
                 await addDoc(collection(db, "posts"), {
                     author: window.currentUser.user,
@@ -377,7 +513,7 @@
                     hearts: [], breaks: [], replies: [], reports: [], createdAt: serverTimestamp()
                 });
                 window.closePostModal();
-            } catch(e) { alert("File processing error or excessive data limits."); }
+            } catch(e) { alert("Data chunk allocation limit reached. Try slightly shorter video durations."); }
             btn.disabled = false; btn.innerText = "Post Now";
         };
 
@@ -417,22 +553,26 @@
 
         window.renderFeed = () => {
             let posts = [...allPosts].filter(p => p.type !== 'video' && canSeePost(p));
-            const searchVal = document.getElementById('search-input').value.toLowerCase();
-            if(feedFilter === 'search') posts = posts.filter(p => p.author.toLowerCase().includes(searchVal));
+            
+            if(feedFilter === 'following_pill') {
+                const following = window.currentUser?.following || [];
+                posts = posts.filter(p => following.includes(p.author));
+            } else if (feedFilter === 'recent_pill') {
+                // Recents layout structure array
+                posts.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            } else if(feedFilter === 'search_pill') {
+                const searchVal = document.getElementById('search-input').value.toLowerCase();
+                posts = posts.filter(p => p.author.toLowerCase().includes(searchVal));
+            }
+            
             document.getElementById('feed-items').innerHTML = posts.map(p => renderPostHTML(p)).join('');
-        };
-
-        window.renderFollowingFeed = () => {
-            const following = window.currentUser.following || [];
-            const posts = allPosts.filter(p => following.includes(p.author) && canSeePost(p));
-            document.getElementById('following-feed').innerHTML = posts.length ? posts.map(p => renderPostHTML(p)).join('') : '<p style="text-align:center; padding:50px; color:var(--text-dim)">Follow users to see their posts here!</p>';
         };
 
         window.renderVideoHub = () => {
             const vids = allPosts.filter(p => p.type === 'video' && canSeePost(p));
             const container = document.getElementById('video-hub-container');
             container.innerHTML = `
-                <div style="padding: 40px 25px 10px;"><h2>Video Hub</h2></div>
+                <div style="padding: 30px 25px 10px;"><h2>Video Hub</h2></div>
                 <div style="display:flex; overflow-x:auto; gap:15px; padding:20px;">
                     ${vids.slice(0,6).map(p => `
                         <div class="short-card">
@@ -515,6 +655,143 @@
             `;
         }
 
+        /* --- WHATSAPP STYLE MESSAGING SYSTEM ENGINE --- */
+        window.openFriendRequestModal = () => {
+            document.getElementById('friend-request-modal').style.display = 'flex';
+        };
+
+        window.sendFriendRequest = async () => {
+            const targetHandle = document.getElementById('friend-search-input').value.toLowerCase().trim();
+            if(!targetHandle || targetHandle === window.currentUser.user) return alert("Invalid username entry request.");
+            
+            const targetUserObj = allUsers[targetHandle];
+            if(!targetUserObj) return alert("User handle cannot be verified or found in SGP server db context.");
+
+            const reqId = [window.currentUser.user, targetHandle].sort().join("_");
+            await setDoc(doc(db, "friend_requests", reqId), {
+                sender: window.currentUser.user,
+                receiver: targetHandle,
+                status: "pending",
+                timestamp: serverTimestamp()
+            });
+
+            document.getElementById('friend-search-input').value = "";
+            document.getElementById('friend-request-modal').style.display = 'none';
+            alert("Friend request broadcast successfully!");
+        };
+
+        window.acceptFriendConnection = async (reqId, senderHandle) => {
+            await updateDoc(doc(db, "friend_requests", reqId), { status: "accepted" });
+            
+            // Add cross references into individual friend listings collection docs
+            await updateDoc(doc(db, "users", window.currentUser.user), {
+                friendsList: arrayUnion(senderHandle)
+            });
+            await updateDoc(doc(db, "users", senderHandle), {
+                friendsList: arrayUnion(window.currentUser.user)
+            });
+
+            renderMessagingHub();
+        };
+
+        function renderMessagingHub() {
+            const me = window.currentUser.user;
+            
+            // Listen and display incoming pending requests safely
+            onSnapshot(query(collection(db, "friend_requests"), where("receiver", "==", me), where("status", "==", "pending")), (snap) => {
+                const container = document.getElementById('pending-requests-section');
+                if(snap.empty) {
+                    container.innerHTML = "";
+                } else {
+                    container.innerHTML = `<h4 style="margin-bottom:10px; color:var(--accent);">Pending Requests</h4>` + snap.docs.map(d => {
+                        const r = d.data();
+                        return `
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:6px;">
+                                <span>@${r.sender}</span>
+                                <button class="btn" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem;" onclick="window.acceptFriendConnection('${d.id}', '${r.sender}')">Accept</button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            });
+
+            // Display approved friends list dynamically inside panel view
+            const friends = window.currentUser.friendsList || [];
+            const chatsContainer = document.getElementById('active-chats-list');
+            if(!friends.length) {
+                chatsContainer.innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-dim);">No active friend connections yet. Click the + icon above to invite your squad!</p>`;
+            } else {
+                chatsContainer.innerHTML = friends.map(fHandle => {
+                    const friendObj = allUsers[fHandle] || { name: fHandle, pfp: "" };
+                    return `
+                        <div class="chat-list-item" onclick="window.openDirectChatWindow('${fHandle}')">
+                            <img class="pfp-small" src="${friendObj.pfp || 'https://via.placeholder.com/35'}">
+                            <div>
+                                <strong style="color:white;">${friendObj.name}</strong>
+                                <p style="font-size:0.8rem; color:var(--text-dim)">@${fHandle} • Tap to message</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        window.openDirectChatWindow = (friendHandle) => {
+            activeChatFriend = friendHandle;
+            const friendObj = allUsers[friendHandle] || { name: friendHandle, pfp: "" };
+            
+            document.getElementById('chat-target-name').innerText = friendObj.name;
+            document.getElementById('chat-target-handle').innerText = "@" + friendHandle;
+            document.getElementById('chat-target-pfp').src = friendObj.pfp || "https://via.placeholder.com/35";
+            document.getElementById('chat-modal').style.display = 'flex';
+
+            const chatRoomId = [window.currentUser.user, friendHandle].sort().join("##");
+            
+            if(unsubscribeChat) unsubscribeChat();
+
+            unsubscribeChat = onSnapshot(query(collection(db, "messages"), where("roomId", "==", chatRoomId), orderBy("sentAt", "asc")), (snap) => {
+                const bubbleRender = document.getElementById('chat-bubbles-render-target');
+                bubbleRender.innerHTML = snap.docs.map(doc => {
+                    const m = doc.data();
+                    const isMe = m.sender === window.currentUser.user;
+                    return `
+                        <div class="chat-bubble ${isMe ? 'sent' : 'received'}">
+                            <div>${m.text}</div>
+                            <div class="chat-timestamp">${m.timeStr || ''}</div>
+                        </div>
+                    `;
+                }).join('');
+                bubbleRender.scrollTop = bubbleRender.scrollHeight;
+            });
+        };
+
+        window.sendDirectMessage = async () => {
+            const inputEl = document.getElementById('chat-msg-input');
+            const msgText = inputEl.value.trim();
+            if(!msgText || !activeChatFriend) return;
+
+            const chatRoomId = [window.currentUser.user, activeChatFriend].sort().join("##");
+            const timeNow = new Date();
+            const timeStr = timeNow.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            await addDoc(collection(db, "messages"), {
+                roomId: chatRoomId,
+                sender: window.currentUser.user,
+                receiver: activeChatFriend,
+                text: msgText,
+                timeStr: timeStr,
+                sentAt: serverTimestamp()
+            });
+
+            inputEl.value = "";
+        };
+
+        window.closeChatModal = () => {
+            if(unsubscribeChat) unsubscribeChat();
+            document.getElementById('chat-modal').style.display = 'none';
+            activeChatFriend = null;
+        };
+
         /* --- DASHBOARD SETTINGS ENGINE ENGINE --- */
         window.openSettingsDashboard = () => {
             document.getElementById('settings-modal').style.display = 'flex';
@@ -531,7 +808,7 @@
             event.target.classList.add('active');
             document.getElementById(`set-panel-${tab}`).classList.add('active');
 
-            if(tab === 'tit') {
+            if(tab === 'bit' || tab === 'tit') {
                 const titleInventory = window.currentUser.earnedTitles || [];
                 const invContainer = document.getElementById('set-titles-inventory');
                 if(!titleInventory.length) {
@@ -732,7 +1009,7 @@
         }
 
 
-        /* --- PERSISTENT REGPOINTS & DAILY QUEST ENGINE --- */
+        /* --- PERSISTENT SGP POINTS & DAILY QUEST ENGINE --- */
         const DAILY_QUESTS_POOL = [
             { id: "dq_heart_10", text: "Heart 10 posts", target: 10, type: "heart" },
             { id: "dq_break_10", text: "Broken heart 10 posts", target: 10, type: "break" },
@@ -750,7 +1027,6 @@
         function verifyAndGenerateDailyQuests() {
             const today = getTodayString();
             if (window.currentUser.dailyQuestsDate !== today) {
-                // Pick 3 pseudo-random quests from pool based on the day
                 const dayNumeric = new Date().getDate();
                 const shuffled = [...DAILY_QUESTS_POOL].sort((a,b) => (a.id.charCodeAt(4) || 1) * dayNumeric % 3 - 1);
                 const selectedQuests = shuffled.slice(0, 3).map(q => ({
@@ -810,7 +1086,7 @@
             window.currentUser.dailyQuests = updatedQuests;
             localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
             renderShopPage();
-            alert("Claimed 5 REGPoints successfully!");
+            alert("Claimed 5 SGP Points successfully!");
         };
 
         window.verifyTitleAdmin = () => {
@@ -840,7 +1116,7 @@
 
         window.purchasePointsStoreTitle = async (titleName, cost) => {
             const currentPoints = window.currentUser.pointsBalance || 0;
-            if(currentPoints < cost) return alert("Insufficient REGPoints balance.");
+            if(currentPoints < cost) return alert("Insufficient SGP Points balance.");
 
             const updatedPoints = currentPoints - cost;
             const myRef = doc(db, "users", window.currentUser.user);
@@ -864,9 +1140,8 @@
             verifyAndGenerateDailyQuests();
 
             const pointsWallet = window.currentUser.pointsBalance || 0;
-            document.getElementById('user-points-wallet').innerText = `Balance: ${pointsWallet} REGPoints`;
+            document.getElementById('user-points-wallet').innerText = `Balance: ${pointsWallet} SGP Points`;
 
-            // Render Daily Quests
             const dqHTML = (window.currentUser.dailyQuests || []).map(q => {
                 const complete = q.progress >= q.target;
                 return `
@@ -884,7 +1159,6 @@
             }).join('');
             document.getElementById('daily-quests-render').innerHTML = dqHTML || '<p style="opacity:0.6; font-size:0.9rem;">Loading daily cycles...</p>';
 
-            // Render Titles Shop
             const titlesHTML = storeTitlesConfig.map(t => {
                 const alreadyOwned = window.currentUser.earnedTitles?.includes(t.name);
                 return `
@@ -910,7 +1184,7 @@
             const n = document.getElementById('reg-name').value;
             const p = document.getElementById('reg-pass').value;
             if(!u || !n || !p) return alert("Fill all fields");
-            const userData = { user: u, name: n, pass: p, pfp: "", following: [], evtBalance: 0, pointsBalance: 0, doneQuests: [], activeTitle: "", earnedTitles: [], privacy: "all", dailyQuestsDate: "", dailyQuests: [] };
+            const userData = { user: u, name: n, pass: p, pfp: "", following: [], friendsList: [], evtBalance: 0, pointsBalance: 0, doneQuests: [], activeTitle: "", earnedTitles: [], privacy: "all", dailyQuestsDate: "", dailyQuests: [] };
             await setDoc(doc(db, "users", u), userData);
             localStorage.setItem('sgp_session', JSON.stringify(userData));
             location.reload();
@@ -930,7 +1204,6 @@
         onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (s) => {
             allPosts = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !(p.reports?.length >= 3)); 
             window.renderFeed(); window.renderVideoHub();
-            if(document.getElementById('following-screen').classList.contains('active')) renderFollowingFeed();
             if(document.getElementById('profile-screen').classList.contains('active')) {
                 const currentProfileHandle = document.getElementById('view-handle').innerText.replace('@','');
                 window.viewProfile(currentProfileHandle);
