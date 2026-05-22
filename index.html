@@ -401,13 +401,11 @@
             if(target) target.classList.add('active');
             document.querySelectorAll('video').forEach(v => v.pause());
             
-            // Toggle visibility of global Wireframe header depending on auth screens status
             const headerBlock = document.getElementById('global-wireframe-header');
             if(id === 'signup-screen' || id === 'login-screen') {
                 headerBlock.style.display = 'none';
             } else {
                 headerBlock.style.display = 'flex';
-                // Sync top layout pfp rendering asset safely
                 if(window.currentUser) {
                     document.getElementById('header-profile-pfp').src = window.currentUser.pfp || "https://via.placeholder.com/55";
                 }
@@ -435,7 +433,6 @@
             window.renderFeed();
         };
 
-        // Resolution Optimization & Dynamic Resampling canvas for larger file size upload handles
         window.handleMedia = (input, type) => {
             const file = input.files[0];
             if(!file) return;
@@ -452,7 +449,7 @@
                         if(width > 1200) { height *= 1200 / width; width = 1200; }
                         canvas.width = width; canvas.height = height;
                         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                        pendingMedia = canvas.toDataURL('image/jpeg', 0.6); // Compress down directly
+                        pendingMedia = canvas.toDataURL('image/jpeg', 0.6);
                         mediaType = 'image';
                         document.getElementById('file-status').innerText = "HD IMAGE OPTIMIZED & READY";
                     };
@@ -460,7 +457,6 @@
                 };
                 reader.readAsDataURL(file);
             } else if (type === 'video') {
-                // Read chunks of file directly into memory wrapper base64 bypass string rules
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     pendingMedia = e.target.result;
@@ -558,7 +554,6 @@
                 const following = window.currentUser?.following || [];
                 posts = posts.filter(p => following.includes(p.author));
             } else if (feedFilter === 'recent_pill') {
-                // Recents layout structure array
                 posts.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
             } else if(feedFilter === 'search_pill') {
                 const searchVal = document.getElementById('search-input').value.toLowerCase();
@@ -683,7 +678,6 @@
         window.acceptFriendConnection = async (reqId, senderHandle) => {
             await updateDoc(doc(db, "friend_requests", reqId), { status: "accepted" });
             
-            // Add cross references into individual friend listings collection docs
             await updateDoc(doc(db, "users", window.currentUser.user), {
                 friendsList: arrayUnion(senderHandle)
             });
@@ -697,7 +691,6 @@
         function renderMessagingHub() {
             const me = window.currentUser.user;
             
-            // Listen and display incoming pending requests safely
             onSnapshot(query(collection(db, "friend_requests"), where("receiver", "==", me), where("status", "==", "pending")), (snap) => {
                 const container = document.getElementById('pending-requests-section');
                 if(snap.empty) {
@@ -715,7 +708,6 @@
                 }
             });
 
-            // Display approved friends list dynamically inside panel view
             const friends = window.currentUser.friendsList || [];
             const chatsContainer = document.getElementById('active-chats-list');
             if(!friends.length) {
@@ -749,10 +741,15 @@
             
             if(unsubscribeChat) unsubscribeChat();
 
-            unsubscribeChat = onSnapshot(query(collection(db, "messages"), where("roomId", "==", chatRoomId), orderBy("sentAt", "asc")), (snap) => {
+            // FIXED: Removed query sorting parameters to bypass strict database indexing rule lockouts
+            unsubscribeChat = onSnapshot(query(collection(db, "messages"), where("roomId", "==", chatRoomId)), (snap) => {
                 const bubbleRender = document.getElementById('chat-bubbles-render-target');
-                bubbleRender.innerHTML = snap.docs.map(doc => {
-                    const m = doc.data();
+                
+                // Read and sort elements dynamically in the local browser canvas instead
+                const sortedMessages = snap.docs.map(doc => doc.data())
+                    .sort((a, b) => (a.timestampRaw || 0) - (b.timestampRaw || 0));
+
+                bubbleRender.innerHTML = sortedMessages.map(m => {
                     const isMe = m.sender === window.currentUser.user;
                     return `
                         <div class="chat-bubble ${isMe ? 'sent' : 'received'}">
@@ -780,6 +777,7 @@
                 receiver: activeChatFriend,
                 text: msgText,
                 timeStr: timeStr,
+                timestampRaw: Date.now(), // Local tracking fallback anchor key point
                 sentAt: serverTimestamp()
             });
 
@@ -792,7 +790,7 @@
             activeChatFriend = null;
         };
 
-        /* --- DASHBOARD SETTINGS ENGINE ENGINE --- */
+        /* --- DASHBOARD SETTINGS ENGINE --- */
         window.openSettingsDashboard = () => {
             document.getElementById('settings-modal').style.display = 'flex';
             document.getElementById('set-name').value = window.currentUser.name || "";
