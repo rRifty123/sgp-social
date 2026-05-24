@@ -91,7 +91,9 @@
         }
         .avatar-action-wrapper {
             position: relative;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .header-avatar-btn {
             width: 55px;
@@ -102,23 +104,21 @@
             box-shadow: 0 0 10px var(--primary);
             cursor: pointer;
         }
-        .header-msg-badge {
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            background: var(--accent);
+        .header-msg-badge, .header-search-badge {
+            background: var(--surface);
             color: white;
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            border: 2px solid var(--bg);
+            font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.1);
             cursor: pointer;
-            box-shadow: 0 0 8px var(--accent);
+            box-shadow: 0 0 8px rgba(0,0,0,0.3);
         }
+        .header-msg-badge { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
 
         .btn { padding: 15px; border-radius: 14px; border: none; cursor: pointer; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; margin: 8px auto; width: 90%; align-self: center; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; display: block; text-decoration: none;}
         .btn:active { transform: scale(0.96); opacity: 0.9; }
@@ -135,7 +135,7 @@
         .pfp-small { width:35px; height:35px; border-radius:50%; object-fit: cover; background: var(--primary); }
 
         .short-card { min-width: 170px; height: 300px; background: #000; border-radius: 22px; overflow: hidden; flex-shrink: 0; position: relative; }
-        #post-modal, #event-admin-modal, #settings-modal, #title-admin-modal, #chat-modal, #friend-request-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; overflow-y: auto; }
+        #post-modal, #event-admin-modal, #settings-modal, #title-admin-modal, #chat-modal, #friend-request-modal, #trade-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; overflow-y: auto; }
 
         .event-container { width: 92%; margin: 20px auto; padding: 20px; border-radius: 24px; background: var(--evt-bg); color: var(--evt-text); border: 1px solid rgba(255,255,255,0.1); }
         .quest-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--evt-accent); }
@@ -155,6 +155,11 @@
         .chat-bubble.sent { background: var(--primary); align-self: flex-end; color: white; border-bottom-right-radius: 4px; }
         .chat-bubble.received { background: var(--surface); align-self: flex-start; color: var(--text); border-bottom-left-radius: 4px; }
         .chat-timestamp { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 4px; text-align: right; }
+
+        /* Trading System Additions */
+        .trade-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; margin-bottom: 12px; width: 92%; align-self: center; }
+        .checkbox-container { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 0.9rem; }
+        .checkbox-container input { width: 18px; height: 18px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -167,12 +172,12 @@
                 <button class="pill-tab-item" id="pill-following" onclick="window.setFeedFilter('following_pill')">Following</button>
                 <button class="pill-tab-item active-pill" id="pill-foryou" onclick="window.setFeedFilter('foryou_pill')">For You</button>
                 <button class="pill-tab-item" id="pill-recent" onclick="window.setFeedFilter('recent_pill')">Recents</button>
-                <button class="pill-tab-item" id="pill-search" onclick="window.setFeedFilter('search_pill')">Search</button>
             </div>
 
             <div class="avatar-action-wrapper">
-                <img id="header-profile-pfp" class="header-avatar-btn" src="https://via.placeholder.com/55" onclick="window.viewProfile(window.currentUser?.user)">
+                <div class="header-search-badge" onclick="window.toggleMobileSearch()">🔍</div>
                 <div class="header-msg-badge" onclick="window.showScreen('messaging-hub-screen')">💬</div>
+                <img id="header-profile-pfp" class="header-avatar-btn" src="https://via.placeholder.com/55" onclick="window.viewProfile(window.currentUser?.user)">
             </div>
         </div>
 
@@ -243,6 +248,14 @@
             </div>
             
             <div style="padding: 10px 20px;">
+                <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:16px; margin-bottom:20px; border:1px dashed rgba(255,255,255,0.15);">
+                    <h4 style="margin-bottom:4px;">🔄 Peer-to-Peer Trading Desk</h4>
+                    <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:10px;">Swap your points and permanent badges with other players.</p>
+                    <button class="btn" style="margin:0; width:100%; padding:10px;" onclick="window.openTradeModal()">Initiate New Trade Offer</button>
+                </div>
+
+                <div id="incoming-trades-section" style="margin-bottom:20px;"></div>
+
                 <h3 style="margin-bottom:12px; font-size:1.1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">Daily Quests</h3>
                 <div id="daily-quests-render" style="margin-bottom:25px;"></div>
                 
@@ -284,6 +297,22 @@
         <input type="file" id="vid-in" accept="video/*" hidden onchange="window.handleMedia(this, 'video')">
         <button id="post-btn" class="btn" onclick="window.makePost()">Post Now</button>
         <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="window.closePostModal()">Cancel</button>
+    </div>
+
+    <div id="trade-modal">
+        <h2>Construct Trade Offer</h2>
+        <p style="color:var(--text-dim); margin-bottom:15px;">Search up a user and add elements to barter</p>
+        
+        <input type="text" id="trade-target-input" class="input-box" placeholder="Target player handle (Exact match)...">
+        <input type="number" id="trade-points-input" class="input-box" placeholder="Your SGP Points to offer..." value="0">
+        
+        <div style="padding: 10px; width:90%; margin: 0 auto;">
+            <p style="font-weight:bold; font-size:0.85rem; margin-bottom:8px; color:var(--primary);">Select Titles from Inventory to Offer:</p>
+            <div id="trade-titles-checkboxes" style="max-height:150px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px;"></div>
+        </div>
+
+        <button class="btn" onclick="window.sendTradeOffer()">Dispatch Trade Request</button>
+        <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('trade-modal').style.display='none'">Abort Offer</button>
     </div>
 
     <div id="chat-modal">
@@ -370,7 +399,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setDoc, doc, getDoc, updateDoc, arrayUnion, arrayRemove, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
@@ -416,19 +445,29 @@
             if(id === 'shop-screen') renderShopPage();
         };
 
+        window.toggleMobileSearch = () => {
+            const container = document.getElementById('search-bar-container');
+            if (container.style.display === 'none' || container.style.display === '') {
+                container.style.display = 'block';
+                feedFilter = 'search_pill';
+            } else {
+                container.style.display = 'none';
+                feedFilter = 'foryou_pill';
+                document.getElementById('search-input').value = "";
+            }
+            window.showScreen('feed-screen');
+            window.renderFeed();
+        };
+
         window.setFeedFilter = (f) => {
             feedFilter = f;
             document.querySelectorAll('.pill-tab-item').forEach(b => b.classList.remove('active-pill'));
+            document.getElementById('search-bar-container').style.display = 'none';
             
-            if(f === 'search_pill') {
-                document.getElementById('pill-search').classList.add('active-pill');
-                document.getElementById('search-bar-container').style.display = 'block';
-            } else {
-                document.getElementById('search-bar-container').style.display = 'none';
-                if(f === 'foryou_pill') document.getElementById('pill-foryou').classList.add('active-pill');
-                if(f === 'recent_pill') document.getElementById('pill-recent').classList.add('active-pill');
-                if(f === 'following_pill') document.getElementById('pill-following').classList.add('active-pill');
-            }
+            if(f === 'foryou_pill') document.getElementById('pill-foryou').classList.add('active-pill');
+            if(f === 'recent_pill') document.getElementById('pill-recent').classList.add('active-pill');
+            if(f === 'following_pill') document.getElementById('pill-following').classList.add('active-pill');
+            
             window.showScreen('feed-screen');
             window.renderFeed();
         };
@@ -741,11 +780,9 @@
             
             if(unsubscribeChat) unsubscribeChat();
 
-            // FIXED: Removed query sorting parameters to bypass strict database indexing rule lockouts
             unsubscribeChat = onSnapshot(query(collection(db, "messages"), where("roomId", "==", chatRoomId)), (snap) => {
                 const bubbleRender = document.getElementById('chat-bubbles-render-target');
                 
-                // Read and sort elements dynamically in the local browser canvas instead
                 const sortedMessages = snap.docs.map(doc => doc.data())
                     .sort((a, b) => (a.timestampRaw || 0) - (b.timestampRaw || 0));
 
@@ -777,7 +814,7 @@
                 receiver: activeChatFriend,
                 text: msgText,
                 timeStr: timeStr,
-                timestampRaw: Date.now(), // Local tracking fallback anchor key point
+                timestampRaw: Date.now(), 
                 sentAt: serverTimestamp()
             });
 
@@ -789,6 +826,153 @@
             document.getElementById('chat-modal').style.display = 'none';
             activeChatFriend = null;
         };
+
+        /* --- PEER-TO-PEER TRADING ENGINE --- */
+        window.openTradeModal = () => {
+            document.getElementById('trade-modal').style.display = 'flex';
+            document.getElementById('trade-target-input').value = "";
+            document.getElementById('trade-points-input').value = "0";
+            
+            const inventory = window.currentUser.earnedTitles || [];
+            const container = document.getElementById('trade-titles-checkboxes');
+            
+            if (!inventory.length) {
+                container.innerHTML = `<p style="font-size:0.8rem; color:var(--text-dim)">No titles available to offer.</p>`;
+            } else {
+                container.innerHTML = inventory.map(t => `
+                    <label class="checkbox-container">
+                        <input type="checkbox" class="trade-title-checkbox" value="${t}">
+                        <span>${t}</span>
+                    </label>
+                `).join('');
+            }
+        };
+
+        window.sendTradeOffer = async () => {
+            const target = document.getElementById('trade-target-input').value.trim().toLowerCase();
+            const pointsOffer = parseInt(document.getElementById('trade-points-input').value) || 0;
+            
+            if (!target || target === window.currentUser.user) return alert("Provide a valid target teammate handle.");
+            if (!allUsers[target]) return alert("Target player could not be verified in server registry.");
+            if (pointsOffer > (window.currentUser.pointsBalance || 0) || pointsOffer < 0) return alert("Insufficient SGP points balance to commit to this offer.");
+
+            const selectedTitles = [];
+            document.querySelectorAll('.trade-title-checkbox:checked').forEach(cb => {
+                selectedTitles.push(cb.value);
+            });
+
+            if (pointsOffer === 0 && selectedTitles.length === 0) return alert("You must offer at least some items or points to initiate barter.");
+
+            await addDoc(collection(db, "trades"), {
+                sender: window.currentUser.user,
+                receiver: target,
+                points: pointsOffer,
+                titles: selectedTitles,
+                status: "pending",
+                createdAt: serverTimestamp()
+            });
+
+            document.getElementById('trade-modal').style.display = 'none';
+            alert("Trade offer sent to player dashboard successfully!");
+        };
+
+        window.processTradeResponse = async (tradeId, action) => {
+            const docRef = doc(db, "trades", tradeId);
+            const snap = await getDoc(docRef);
+            if (!snap.exists()) return;
+            
+            const trade = snap.data();
+            if (trade.status !== "pending") return;
+
+            if (action === "reject") {
+                await updateDoc(docRef, { status: "rejected" });
+                return renderShopPage();
+            }
+
+            const senderRef = doc(db, "users", trade.sender);
+            const receiverRef = doc(db, "users", trade.receiver);
+
+            const senderSnap = await getDoc(senderRef);
+            const receiverSnap = await getDoc(receiverRef);
+
+            if (!senderSnap.exists() || !receiverSnap.exists()) return;
+
+            const senderData = senderSnap.data();
+            const receiverData = receiverSnap.data();
+
+            // Safety cross-check verify before ledger allocation execution
+            if ((senderData.pointsBalance || 0) < trade.points) {
+                await updateDoc(docRef, { status: "cancelled_insufficient_funds" });
+                return alert("Trade failure: Offer origin no longer contains enough SGP points.");
+            }
+
+            const titlesValid = trade.titles.every(t => senderData.earnedTitles?.includes(t));
+            if (!titlesValid) {
+                await updateDoc(docRef, { status: "cancelled_missing_assets" });
+                return alert("Trade failure: Originator no longer holds title badge properties.");
+            }
+
+            // Safe Atomic Double-Sided Transaction Ledger Posting Block
+            const batch = writeBatch(db);
+
+            // Deduct from Sender
+            let updatedSenderTitles = (senderData.earnedTitles || []).filter(t => !trade.titles.includes(t));
+            let senderActiveTitle = senderData.activeTitle;
+            if (trade.titles.includes(senderActiveTitle)) senderActiveTitle = "";
+            
+            batch.update(senderRef, {
+                pointsBalance: (senderData.pointsBalance || 0) - trade.points,
+                earnedTitles: updatedSenderTitles,
+                activeTitle: senderActiveTitle
+            });
+
+            // Credit to Receiver
+            let updatedReceiverTitles = [...(receiverData.earnedTitles || [])];
+            trade.titles.forEach(t => {
+                if (!updatedReceiverTitles.includes(t)) updatedReceiverTitles.push(t);
+            });
+
+            batch.update(receiverRef, {
+                pointsBalance: (receiverData.pointsBalance || 0) + trade.points,
+                earnedTitles: updatedReceiverTitles
+            });
+
+            // Close trade status ledger
+            batch.update(docRef, { status: "accepted" });
+
+            await batch.commit();
+            alert("Trade completed! Your inventory and vault balances have adjusted automatically.");
+            renderShopPage();
+        };
+
+        function monitorLiveIncomingTrades() {
+            if (!window.currentUser) return;
+            onSnapshot(query(collection(db, "trades"), where("receiver", "==", window.currentUser.user), where("status", "==", "pending")), (snap) => {
+                const container = document.getElementById('incoming-trades-section');
+                if (snap.empty) {
+                    container.innerHTML = "";
+                    return;
+                }
+
+                container.innerHTML = `<h3 style="margin-bottom:12px; font-size:1.1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px; color:var(--accent);">Incoming Barter Requests</h3>` + 
+                snap.docs.map(d => {
+                    const t = d.data();
+                    return `
+                        <div class="trade-card">
+                            <p style="font-size:0.85rem; margin-bottom:8px;">From: <strong style="color:white;">@${t.sender}</strong></p>
+                            <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.85rem;">
+                                <div>💰 SGP Points Offer: <span style="color:#22c55e; font-weight:bold;">+${t.points} Pts</span></div>
+                                <div>🎖️ Offered Badges: <span style="color:var(--primary); font-weight:bold;">${t.titles.join(', ') || 'None'}</span></div>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <button class="btn" style="margin:0; flex:1; padding:8px; font-size:0.8rem; background:#22c55e;" onclick="window.processTradeResponse('${d.id}', 'accept')">Accept Exchange</button>
+                                <button class="btn" style="margin:0; flex:1; padding:8px; font-size:0.8rem; background:#ef4444;" onclick="window.processTradeResponse('${d.id}', 'reject')">Decline</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            });
+        }
 
         /* --- DASHBOARD SETTINGS ENGINE --- */
         window.openSettingsDashboard = () => {
@@ -1023,6 +1207,7 @@
         }
 
         function verifyAndGenerateDailyQuests() {
+            if (!window.currentUser || !window.currentUser.user) return;
             const today = getTodayString();
             if (window.currentUser.dailyQuestsDate !== today) {
                 const dayNumeric = new Date().getDate();
@@ -1214,6 +1399,10 @@
                 window.currentUser = allUsers[window.currentUser.user];
                 localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
                 if(document.getElementById('shop-screen').classList.contains('active')) renderShopPage();
+            }
+            // Sequenced hook initialization setup boundary condition safeguard
+            if (window.currentUser && Object.keys(allUsers).length > 0) {
+                monitorLiveIncomingTrades();
             }
         });
 
