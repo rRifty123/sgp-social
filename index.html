@@ -55,6 +55,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
             margin-top: env(safe-area-inset-top, 20px);
             position: relative;
+            z-index: 900;
         }
         .header-logo-title {
             font-size: 1.8rem;
@@ -128,6 +129,23 @@
         .nav-bar { position: fixed; bottom: 0; width: 100%; height: 85px; background: var(--glass); backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; z-index: 1000; }
         .nav-item { font-size: 1.6rem; cursor: pointer; filter: grayscale(1); transition: 0.3s; }
 
+        /* Statement Standout Plus Button Feature */
+        .nav-item-plus-master {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            width: 68px; height: 68px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.4rem !important;
+            color: #fff !important;
+            filter: grayscale(0) !important;
+            margin-top: -35px;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.6), 0 4px 15px rgba(0,0,0,0.4);
+            border: 3px solid var(--bg);
+            transition: 0.2s transform ease;
+            z-index: 1100;
+        }
+        .nav-item-plus-master:active { transform: scale(0.9) translateY(-15px); }
+
         .post { background: var(--glass); backdrop-filter: blur(5px); margin-bottom: 15px; padding: 18px; border-radius: 20px; width: 92%; align-self: center; border: 1px solid rgba(255,255,255,0.08); }
         .reply-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px; margin-top: 8px; font-size: 0.85rem; border-left: 3px solid var(--accent); color: var(--text); }
 
@@ -135,7 +153,7 @@
         .pfp-small { width:35px; height:35px; border-radius:50%; object-fit: cover; background: var(--primary); }
 
         .short-card { min-width: 170px; height: 300px; background: #000; border-radius: 22px; overflow: hidden; flex-shrink: 0; position: relative; }
-        #post-modal, #event-admin-modal, #settings-modal, #title-admin-modal, #chat-modal, #friend-request-modal, #trade-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; overflow-y: auto; }
+        #post-modal, #event-admin-modal, #settings-modal, #title-admin-modal, #chat-modal, #friend-request-modal, #trade-modal, #share-target-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 25px; padding-top: 60px; overflow-y: auto; }
 
         .event-container { width: 92%; margin: 20px auto; padding: 20px; border-radius: 24px; background: var(--evt-bg); color: var(--evt-text); border: 1px solid rgba(255,255,255,0.1); }
         .quest-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--evt-accent); }
@@ -160,9 +178,56 @@
         .trade-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; margin-bottom: 12px; width: 92%; align-self: center; }
         .checkbox-container { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 0.9rem; }
         .checkbox-container input { width: 18px; height: 18px; cursor: pointer; }
+
+        /* Global Dynamic Loader Layer UI */
+        #global-spin-loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(2, 6, 23, 0.85); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+        }
+        #global-spin-loader-overlay.active-loading { opacity: 1; pointer-events: auto; }
+        .circle-progress-ring { width: 90px; height: 90px; position: relative; }
+        .circle-progress-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .circle-progress-ring circle {
+            width: 100%; height: 100%; fill: none;
+            stroke-width: 8; stroke-linecap: round;
+        }
+        .circle-progress-ring .track-bg { stroke: #334155; }
+        .circle-progress-ring .fill-progress {
+            stroke: #06b6d4;
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 0.4s ease, stroke 0.3s ease;
+        }
+
+        /* Pill tags selectable for Interests matrix */
+        .hashtag-pill-selector {
+            display: inline-block; padding: 8px 14px; margin: 5px;
+            border-radius: 20px; background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem;
+            cursor: pointer; transition: 0.2s; color: var(--text-dim);
+        }
+        .hashtag-pill-selector.selected-tag {
+            background: var(--primary); color: white;
+            box-shadow: 0 0 10px var(--primary); border-color: transparent;
+        }
+        .post-hashtag-badge {
+            display: inline-block; font-size: 0.8rem; color: #06b6d4;
+            margin-right: 8px; margin-top: 6px; font-weight: bold;
+        }
     </style>
 </head>
 <body>
+
+    <div id="global-spin-loader-overlay">
+        <div class="circle-progress-ring">
+            <svg>
+                <circle class="track-bg" cx="45" cy="45" r="40"></circle>
+                <circle id="loader-fill-circle" class="fill-progress" cx="45" cy="45" r="40"></circle>
+            </svg>
+        </div>
+    </div>
 
     <div id="app-container">
         <div id="global-wireframe-header" class="app-header-layout" style="display:none;">
@@ -187,6 +252,12 @@
                 <input type="text" id="reg-user" class="input-box" placeholder="Username">
                 <input type="text" id="reg-name" class="input-box" placeholder="Your Name">
                 <input type="password" id="reg-pass" class="input-box" placeholder="Password">
+                
+                <div style="margin: 15px auto; width:90%; text-align:left;">
+                    <p style="font-size:0.9rem; font-weight:bold; color:var(--text); margin-left:5px; margin-bottom:8px;">Choose your Interests Matrix:</p>
+                    <div id="signup-hashtag-pills-container"></div>
+                </div>
+
                 <button class="btn" onclick="window.doSignup()">Start Exploring</button>
                 <p onclick="window.showScreen('login-screen')" style="margin-top:25px; color: var(--accent);">Already have an account? Login</p>
             </div>
@@ -271,7 +342,7 @@
                 <p id="view-handle" style="color: var(--text-dim); margin-bottom:4px;">@user</p>
                 <p id="view-title" style="color: var(--accent); font-weight:bold; font-size:0.9rem; letter-spacing:1px; margin-bottom:8px; text-transform:uppercase;"></p>
                 <p id="view-followers" style="color: var(--text); font-size:0.9rem; font-weight:bold; margin-bottom:12px;">0 Followers</p>
-                <div id="profile-actions" style="margin-top: 15px;"></div>
+                <div id="profile-actions" style="margin-top: 15px; display:flex; flex-direction:column; gap:2px; align-items:center; justify-content:center;"></div>
                 <input type="file" id="pfp-upload" hidden accept="image/*" onchange="window.updatePFP(this)">
             </div>
             <div style="padding: 10px 20px;"><h3>User Posts</h3></div>
@@ -281,7 +352,7 @@
         <nav class="nav-bar">
             <div class="nav-item" onclick="window.showScreen('feed-screen')">🏠</div>
             <div class="nav-item" onclick="window.showScreen('video-hub-screen')">🎬</div>
-            <div class="nav-item" onclick="window.openPostModal()" style="color:var(--accent); font-weight:bold; font-size:2.5rem;">+</div>
+            <div class="nav-item nav-item-plus-master" onclick="window.openPostModal()">+</div>
             <div class="nav-item" onclick="window.showScreen('event-screen')">📅</div>
             <div class="nav-item" onclick="window.showScreen('shop-screen')">🛒</div>
         </nav>
@@ -290,6 +361,12 @@
     <div id="post-modal">
         <h2 style="margin-bottom: 20px;">Share Content</h2>
         <textarea id="post-text" class="input-box" style="height: 140px;" placeholder="What's on your mind?"></textarea>
+        
+        <div style="width:90%; margin: 5px auto 15px;">
+            <p style="font-size:0.85rem; font-weight:bold; margin-bottom:6px; color:var(--text-dim);">Attach Hashtag Context Categories:</p>
+            <div id="post-hashtag-selection-pool"></div>
+        </div>
+
         <div id="file-status" style="color:var(--primary); text-align:center; font-weight:bold; margin: 10px;"></div>
         <button class="btn" onclick="document.getElementById('img-in').click()" style="background:#334155;">📷 Photo</button>
         <button class="btn" onclick="document.getElementById('vid-in').click()" style="background:#334155;">🎥 Video (HD Max Compression)</button>
@@ -313,6 +390,13 @@
 
         <button class="btn" onclick="window.sendTradeOffer()">Dispatch Trade Request</button>
         <button class="btn" style="background:transparent; color: var(--text-dim);" onclick="document.getElementById('trade-modal').style.display='none'">Abort Offer</button>
+    </div>
+
+    <div id="share-target-modal">
+        <h2>Forward Post To Chat</h2>
+        <p style="color:var(--text-dim); margin-bottom:20px;">Select a teammate friend from your connections below:</p>
+        <div id="share-friends-target-render-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <button class="btn" style="background:transparent; color:var(--text-dim); margin-top:20px;" onclick="document.getElementById('share-target-modal').style.display='none'">Close</button>
     </div>
 
     <div id="chat-modal">
@@ -345,6 +429,7 @@
             <div class="settings-tab active" onclick="window.switchSettingsTab('gen')">General</div>
             <div class="settings-tab" onclick="window.switchSettingsTab('priv')">Privacy</div>
             <div class="settings-tab" onclick="window.switchSettingsTab('tit')">Titles</div>
+            <div class="settings-tab" onclick="window.switchSettingsTab('tags')">Hashtags</div>
         </div>
 
         <div id="set-panel-gen" class="settings-panel active">
@@ -368,6 +453,13 @@
 
         <div id="set-panel-tit" class="settings-panel">
             <div id="set-titles-inventory" style="padding: 10px 20px;"></div>
+        </div>
+
+        <div id="set-panel-tags" class="settings-panel">
+            <div style="padding: 10px 20px;">
+                <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:12px;">Modify your favorite interest streams matching For You algorithms:</p>
+                <div id="settings-hashtags-pills-container"></div>
+            </div>
         </div>
 
         <button class="btn" onclick="window.saveAccountSettings()">Save Configurations</button>
@@ -424,25 +516,56 @@
         let mediaType = 'text';
         let feedFilter = 'foryou_pill';
 
-        window.showScreen = (id) => {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            const target = document.getElementById(id);
-            if(target) target.classList.add('active');
-            document.querySelectorAll('video').forEach(v => v.pause());
-            
-            const headerBlock = document.getElementById('global-wireframe-header');
-            if(id === 'signup-screen' || id === 'login-screen') {
-                headerBlock.style.display = 'none';
-            } else {
-                headerBlock.style.display = 'flex';
-                if(window.currentUser) {
-                    document.getElementById('header-profile-pfp').src = window.currentUser.pfp || "https://via.placeholder.com/55";
-                }
-            }
+        // Hashtags Ecosystem Constants Matrix Configuration
+        const AVAILABLE_HASHTAGS = ["funny", "cooking", "memes", "dance", "cars", "viral", "historical", "education", "pov"];
+        let selectedSignupHashtags = [];
+        let selectedPostHashtags = [];
+        let activeSharingPostId = null;
 
-            if(id === 'messaging-hub-screen') renderMessagingHub();
-            if(id === 'event-screen') renderLiveEventPage();
-            if(id === 'shop-screen') renderShopPage();
+        // Visual Circle Progression Loader Mock Loop Controller
+        window.triggerPageProgressLoader = (completionCallback) => {
+            const overlay = document.getElementById('global-spin-loader-overlay');
+            const fillCircle = document.getElementById('loader-fill-circle');
+            overlay.classList.add('active-loading');
+            fillCircle.style.strokeDashoffset = "251.2";
+
+            let currentPercentage = 0;
+            const interval = setInterval(() => {
+                currentPercentage += 10;
+                const offset = 251.2 - (251.2 * (currentPercentage / 100));
+                fillCircle.style.strokeDashoffset = offset;
+
+                if (currentPercentage >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        overlay.classList.remove('active-loading');
+                        if (completionCallback) completionCallback();
+                    }, 200);
+                }
+            }, 40);
+        };
+
+        window.showScreen = (id) => {
+            window.triggerPageProgressLoader(() => {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(id);
+                if(target) target.classList.add('active');
+                document.querySelectorAll('video').forEach(v => v.pause());
+                
+                const headerBlock = document.getElementById('global-wireframe-header');
+                if(id === 'signup-screen' || id === 'login-screen') {
+                    headerBlock.style.display = 'none';
+                } else {
+                    headerBlock.style.display = 'flex';
+                    if(window.currentUser) {
+                        document.getElementById('header-profile-pfp').src = window.currentUser.pfp || "https://via.placeholder.com/55";
+                    }
+                }
+
+                if(id === 'messaging-hub-screen') renderMessagingHub();
+                if(id === 'event-screen') renderLiveEventPage();
+                if(id === 'shop-screen') renderShopPage();
+            });
         };
 
         window.toggleMobileSearch = () => {
@@ -536,6 +659,38 @@
             window.viewProfile(targetUser);
         };
 
+        // Execution Level Account Blocking Feature Modality Implementation
+        window.executeAccountBlock = async (targetUser) => {
+            if (!confirm(`Are you completely sure you want to block @${targetUser}? This action breaks any connection loops and stops you seeing each other's updates entirely.`)) return;
+            
+            const myHandle = window.currentUser.user;
+            const myRef = doc(db, "users", myHandle);
+            const targetRef = doc(db, "users", targetUser);
+
+            // Mutate and clean local cached memories
+            window.currentUser.blockedAccounts = [...(window.currentUser.blockedAccounts || []), targetUser];
+            window.currentUser.friendsList = (window.currentUser.friendsList || []).filter(u => u !== targetUser);
+            window.currentUser.following = (window.currentUser.following || []).filter(u => u !== targetUser);
+            localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
+
+            const batch = writeBatch(db);
+            // Append target allocation profile into my blocklist configuration matrix arrays
+            batch.update(myRef, {
+                blockedAccounts: arrayUnion(targetUser),
+                friendsList: arrayRemove(targetUser),
+                following: arrayRemove(targetUser)
+            });
+            // Strip structural connections out from targeted user allocations too
+            batch.update(targetRef, {
+                friendsList: arrayRemove(myHandle),
+                following: arrayRemove(myHandle)
+            });
+            await batch.commit();
+
+            alert(`@${targetUser} has been placed into your strict infrastructure block rules checklist.`);
+            window.showScreen('feed-screen');
+        };
+
         window.makePost = async () => {
             const btn = document.getElementById('post-btn');
             btn.disabled = true; btn.innerText = "Broadcasting Stream to Cloud...";
@@ -545,6 +700,7 @@
                     content: document.getElementById('post-text').value,
                     media: pendingMedia, type: mediaType,
                     privacy: window.currentUser.privacy || "all",
+                    hashtags: selectedPostHashtags,
                     hearts: [], breaks: [], replies: [], reports: [], createdAt: serverTimestamp()
                 });
                 window.closePostModal();
@@ -579,6 +735,16 @@
         };
 
         function canSeePost(p) {
+            if (!window.currentUser) return true;
+            
+            // Block validation intercept layer logic
+            const blockedList = window.currentUser.blockedAccounts || [];
+            if (blockedList.includes(p.author)) return false;
+
+            // Reverse block intercept security mapping check
+            const targetUserObj = allUsers[p.author];
+            if (targetUserObj && targetUserObj.blockedAccounts?.includes(window.currentUser.user)) return false;
+
             if (!p.privacy || p.privacy === "all" || p.author === window.currentUser?.user) return true;
             const authorData = allUsers[p.author];
             if (p.privacy === "followers") return authorData?.following?.includes(window.currentUser?.user);
@@ -594,6 +760,16 @@
                 posts = posts.filter(p => following.includes(p.author));
             } else if (feedFilter === 'recent_pill') {
                 posts.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            } else if(feedFilter === 'foryou_pill') {
+                // Modified Interest-Aligned Matrix Priority For-You Algorithm Engine Logic Layout
+                const myPreferredTags = window.currentUser?.preferredHashtags || [];
+                if (myPreferredTags.length > 0) {
+                    posts.sort((a, b) => {
+                        const aMatches = (a.hashtags || []).some(t => myPreferredTags.includes(t)) ? 1 : 0;
+                        const bMatches = (b.hashtags || []).some(t => myPreferredTags.includes(t)) ? 1 : 0;
+                        return bMatches - aMatches; 
+                    });
+                }
             } else if(feedFilter === 'search_pill') {
                 const searchVal = document.getElementById('search-input').value.toLowerCase();
                 posts = posts.filter(p => p.author.toLowerCase().includes(searchVal));
@@ -651,10 +827,56 @@
                 `<button class="btn" onclick="document.getElementById('pfp-upload').click()">Change Picture</button>
                  <button class="btn" style="background:var(--surface); color:var(--text)" onclick="window.openSettingsDashboard()">⚙️ Settings</button>
                  <button class="btn" style="background:#ef4444" onclick="localStorage.clear(); location.reload();">Logout</button>` : 
-                `<button class="btn" style="background:${isFollowing ? '#334155':'var(--primary)'}" onclick="window.toggleFollow('${h}')">${isFollowing ? 'Unfollow' : 'Follow User'}</button>`;
+                `<button class="btn" style="background:${isFollowing ? '#334155':'var(--primary)'}" onclick="window.toggleFollow('${h}')">${isFollowing ? 'Unfollow' : 'Follow User'}</button>
+                 <button class="btn" style="background:#ef4444; margin-top:5px; padding:10px;" onclick="window.executeAccountBlock('${h}')">🚫 Block Account</button>`;
             
             const uposts = allPosts.filter(p => p.author === h && canSeePost(p));
             document.getElementById('user-posts-container').innerHTML = uposts.map(p => renderPostHTML(p)).join('');
+        };
+
+        // In-App Action Forward Routing Share Trigger Component Setup Logic Layer
+        window.openPostShareTray = (postId) => {
+            activeSharingPostId = postId;
+            document.getElementById('share-target-modal').style.display = 'flex';
+            
+            const friends = window.currentUser.friendsList || [];
+            const container = document.getElementById('share-friends-target-render-list');
+            
+            if (!friends.length) {
+                container.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-dim);">No friend connections configured to target share forwards to yet.</p>`;
+            } else {
+                container.innerHTML = friends.map(fHandle => {
+                    const fObj = allUsers[fHandle] || { name: fHandle };
+                    return `
+                        <div class="chat-list-item" style="width:100%; margin:0;" onclick="window.confirmAndDispatchSharedPost('${fHandle}')">
+                            <img class="pfp-small" src="${fObj.pfp || 'https://via.placeholder.com/35'}">
+                            <div>
+                                <strong>${fObj.name}</strong>
+                                <p style="font-size:0.75rem; color:var(--text-dim);">@${fHandle}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        };
+
+        window.confirmAndDispatchSharedPost = async (friendHandle) => {
+            if (!activeSharingPostId || !friendHandle) return;
+            const chatRoomId = [window.currentUser.user, friendHandle].sort().join("##");
+            
+            await addDoc(collection(db, "messages"), {
+                roomId: chatRoomId,
+                sender: window.currentUser.user,
+                receiver: friendHandle,
+                text: `📢 [FORWARDED POST REEVALUATION CARD]: Check this out from @${window.currentUser.user}! (Post ID reference content: ${activeSharingPostId})`,
+                timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                timestampRaw: Date.now(),
+                sentAt: serverTimestamp()
+            });
+
+            document.getElementById('share-target-modal').style.display = 'none';
+            alert(`Content card forwarded successfully into @${friendHandle} chat window!`);
+            activeSharingPostId = null;
         };
 
         function renderPostHTML(p) {
@@ -662,6 +884,8 @@
             const repliesHTML = (p.replies || []).map(r => `
                 <div class="reply-card"><b>@${r.author}:</b> ${r.text}</div>
             `).join('');
+
+            const hashtagsHTML = (p.hashtags || []).map(t => `<span class="post-hashtag-badge">#${t}</span>`).join('');
 
             return `
                 <div class="post">
@@ -673,11 +897,17 @@
                         <span onclick="window.reportPost('${p.id}')" style="cursor:pointer; font-size:0.85rem; color:var(--text-dim);">⚠️ Report</span>
                     </div>
                     <p>${p.content}</p>
+                    <div style="margin-bottom:4px;">${hashtagsHTML}</div>
                     ${p.media ? (p.type === 'image' ? `<img src="${p.media}" style="width:100%; border-radius:12px; margin-top:10px;">` : `<video src="${p.media}" controls style="width:100%; border-radius:12px; margin-top:10px;"></video>`) : ""}
-                    <div style="display:flex; gap:20px; margin-top:15px; font-weight:bold; margin-bottom:10px;">
-                        <span onclick="window.react('${p.id}', 'hearts')">❤️ ${p.hearts?.length || 0}</span>
-                        <span onclick="window.react('${p.id}', 'breaks')">💔 ${p.breaks?.length || 0}</span>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; margin-bottom:10px; font-weight:bold; padding-right:10px;">
+                        <div style="display:flex; gap:20px;">
+                            <span onclick="window.react('${p.id}', 'hearts')" style="cursor:pointer;">❤️ ${p.hearts?.length || 0}</span>
+                            <span onclick="window.react('${p.id}', 'breaks')" style="cursor:pointer;">💔 ${p.breaks?.length || 0}</span>
+                        </div>
+                        <span onclick="window.openPostShareTray('${p.id}')" style="cursor:pointer; color:var(--primary); font-size:0.9rem;">🔗 Share</span>
                     </div>
+
                     <div class="replies-box" style="border-top:1px solid rgba(255,255,255,0.05); padding-top:5px;">
                         ${repliesHTML}
                     </div>
@@ -700,6 +930,11 @@
             
             const targetUserObj = allUsers[targetHandle];
             if(!targetUserObj) return alert("User handle cannot be verified or found in SGP server db context.");
+
+            // Intercept check for infrastructure blocks block validation checklist rules
+            if (window.currentUser.blockedAccounts?.includes(targetHandle) || targetUserObj.blockedAccounts?.includes(window.currentUser.user)) {
+                return alert("Communication route unavailable between targeted workspace accounts.");
+            }
 
             const reqId = [window.currentUser.user, targetHandle].sort().join("_");
             await setDoc(doc(db, "friend_requests", reqId), {
@@ -856,6 +1091,11 @@
             if (!allUsers[target]) return alert("Target player could not be verified in server registry.");
             if (pointsOffer > (window.currentUser.pointsBalance || 0) || pointsOffer < 0) return alert("Insufficient SGP points balance to commit to this offer.");
 
+            // Intercept blocks array validation
+            if (window.currentUser.blockedAccounts?.includes(target) || allUsers[target].blockedAccounts?.includes(window.currentUser.user)) {
+                return alert("Trading interface offline for this communication vector node.");
+            }
+
             const selectedTitles = [];
             document.querySelectorAll('.trade-title-checkbox:checked').forEach(cb => {
                 selectedTitles.push(cb.value);
@@ -990,7 +1230,7 @@
             event.target.classList.add('active');
             document.getElementById(`set-panel-${tab}`).classList.add('active');
 
-            if(tab === 'bit' || tab === 'tit') {
+            if(tab === 'tit') {
                 const titleInventory = window.currentUser.earnedTitles || [];
                 const invContainer = document.getElementById('set-titles-inventory');
                 if(!titleInventory.length) {
@@ -1004,6 +1244,46 @@
                             </button>
                         </div>
                     `).join('');
+                }
+            }
+
+            if(tab === 'tags') {
+                // Settings Hashtag Workspace Controller Matrix Sync
+                const container = document.getElementById('settings-hashtags-pills-container');
+                const myFavs = window.currentUser.preferredHashtags || [];
+                container.innerHTML = AVAILABLE_HASHTAGS.map(tag => {
+                    const isSelected = myFavs.includes(tag);
+                    return `<span class="hashtag-pill-selector ${isSelected ? 'selected-tag' : ''}" onclick="window.toggleHashtagNodePreference(this, '${tag}', 'settings')">#${tag}</span>`;
+                }).join('');
+            }
+        };
+
+        window.toggleHashtagNodePreference = (element, tag, mode) => {
+            if (mode === 'signup') {
+                if (selectedSignupHashtags.includes(tag)) {
+                    selectedSignupHashtags = selectedSignupHashtags.filter(t => t !== tag);
+                    element.classList.remove('selected-tag');
+                } else {
+                    selectedSignupHashtags.push(tag);
+                    element.classList.add('selected-tag');
+                }
+            } else if (mode === 'settings') {
+                let currentFavs = window.currentUser.preferredHashtags || [];
+                if (currentFavs.includes(tag)) {
+                    currentFavs = currentFavs.filter(t => t !== tag);
+                    element.classList.remove('selected-tag');
+                } else {
+                    currentFavs.push(tag);
+                    element.classList.add('selected-tag');
+                }
+                window.currentUser.preferredHashtags = currentFavs;
+            } else if (mode === 'post') {
+                if (selectedPostHashtags.includes(tag)) {
+                    selectedPostHashtags = selectedPostHashtags.filter(t => t !== tag);
+                    element.classList.remove('selected-tag');
+                } else {
+                    selectedPostHashtags.push(tag);
+                    element.classList.add('selected-tag');
                 }
             }
         };
@@ -1025,9 +1305,10 @@
             const newName = document.getElementById('set-name').value;
             const newPass = document.getElementById('set-pass').value;
             const newPriv = document.getElementById('set-privacy').value;
+            const updatedTags = window.currentUser.preferredHashtags || [];
 
             const myRef = doc(db, "users", window.currentUser.user);
-            await updateDoc(myRef, { name: newName, pass: newPass, privacy: newPriv });
+            await updateDoc(myRef, { name: newName, pass: newPass, privacy: newPriv, preferredHashtags: updatedTags });
 
             window.currentUser.name = newName;
             window.currentUser.pass = newPass;
@@ -1036,6 +1317,7 @@
 
             document.getElementById('settings-modal').style.display = 'none';
             alert("Settings updated successfully.");
+            window.renderFeed();
         };
 
         /* --- LOGICAL EVENT FRAMEWORK ENGINE --- */
@@ -1367,7 +1649,14 @@
             const n = document.getElementById('reg-name').value;
             const p = document.getElementById('reg-pass').value;
             if(!u || !n || !p) return alert("Fill all fields");
-            const userData = { user: u, name: n, pass: p, pfp: "", following: [], friendsList: [], evtBalance: 0, pointsBalance: 0, doneQuests: [], activeTitle: "", earnedTitles: [], privacy: "all", dailyQuestsDate: "", dailyQuests: [] };
+            
+            const userData = { 
+                user: u, name: n, pass: p, pfp: "", following: [], friendsList: [], 
+                evtBalance: 0, pointsBalance: 0, doneQuests: [], activeTitle: "", 
+                earnedTitles: [], privacy: "all", dailyQuestsDate: "", dailyQuests: [],
+                blockedAccounts: [], preferredHashtags: selectedSignupHashtags 
+            };
+            
             await setDoc(doc(db, "users", u), userData);
             localStorage.setItem('sgp_session', JSON.stringify(userData));
             location.reload();
@@ -1400,7 +1689,6 @@
                 localStorage.setItem('sgp_session', JSON.stringify(window.currentUser));
                 if(document.getElementById('shop-screen').classList.contains('active')) renderShopPage();
             }
-            // Sequenced hook initialization setup boundary condition safeguard
             if (window.currentUser && Object.keys(allUsers).length > 0) {
                 monitorLiveIncomingTrades();
             }
@@ -1418,12 +1706,31 @@
             if(document.getElementById('shop-screen').classList.contains('active')) renderShopPage();
         });
 
-        window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
+        window.openPostModal = () => {
+            document.getElementById('post-modal').style.display = 'flex';
+            selectedPostHashtags = [];
+            document.getElementById('post-hashtag-selection-pool').innerHTML = AVAILABLE_HASHTAGS.map(tag => {
+                return `<span class="hashtag-pill-selector" onclick="window.toggleHashtagNodePreference(this, '${tag}', 'post')">#${tag}</span>`;
+            }).join('');
+        };
+        
         window.closePostModal = () => { document.getElementById('post-modal').style.display = 'none'; pendingMedia = null; document.getElementById('file-status').innerText = ""; };
 
         window.onload = () => { 
             if(localStorage.getItem('sgp_theme') === 'light') document.body.classList.add('light-theme');
-            if(window.currentUser) window.showScreen('feed-screen'); else window.showScreen('signup-screen'); 
+            
+            // Populating Signup Hashtags Option Layout Matrix Frame
+            document.getElementById('signup-hashtag-pills-container').innerHTML = AVAILABLE_HASHTAGS.map(tag => {
+                return `<span class="hashtag-pill-selector" onclick="window.toggleHashtagNodePreference(this, '${tag}', 'signup')">#${tag}</span>`;
+            }).join('');
+
+            if(window.currentUser) {
+                window.triggerPageProgressLoader(() => {
+                    window.showScreen('feed-screen');
+                });
+            } else {
+                window.showScreen('signup-screen'); 
+            }
         };
     </script>
 </body>
