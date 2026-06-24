@@ -1,23 +1,22 @@
-<div id="sidebar">
-    <h2>SGP</h2>
-    <ul>
-        <li>Home</li>
-        <li>Explore</li>
-        <li>Notifications</li>
-        <li>Profile</li>
-    </ul>
-</div>
-
-<div id="main-content">
-    <section id="auth-section">
-        <h3>Login to SGP</h3>
-        <input id="email" type="email" placeholder="Email">
-        <input id="password" type="password" placeholder="Password">
-        <button onclick="handleAuth(false)">Login</button>
-        <button onclick="handleAuth(true)">Sign Up</button>
-    </section>
-
-    <div id="feed-container" style="display:none;">
-        <!-- Posts will render here -->
+<body>
+    <div id="sidebar">
+        <h1>SGP</h1>
+        <nav>
+            <p>Home</p>
+            <p>Explore</p>
+            <p>Notifications</p>
+            <p>Profile</p>
+        </nav>
     </div>
-</div>
+
+    <main id="main-content">
+        <div id="auth-section">
+            <h2>Welcome to SGP</h2>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="handleAuth(false)">Log In</button>
+            <button onclick="handleAuth(true)" style="background:transparent; border:1px solid #0085ff;">Sign Up</button>
+        </div>
+    </main>
+    <script type="module" src="app.js"></script>
+</body>
