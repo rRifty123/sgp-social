@@ -1,25 +1,26 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 
-// Your Firebase Config (As provided)
-const firebaseConfig = { /* ... */ };
+const firebaseConfig = { /* Your Config */ };
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
 
-// 1. Logic to create a post
-window.publishPost = async () => {
-    const text = document.getElementById("postContent").value;
-    await addDoc(collection(db, "posts"), { text, createdAt: new Date() });
-};
+// Authentication Functions
+window.handleAuth = async (isSignUp) => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-// 2. Logic to display the feed in real-time
-const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-onSnapshot(q, (snapshot) => {
-    const container = document.getElementById("feed-container");
-    container.innerHTML = ""; // Clear current view
-    snapshot.forEach((doc) => {
-        container.innerHTML += `<div class="post">${doc.data().text}</div>`;
-    });
-});
+    try {
+        if (isSignUp) {
+            await createUserWithEmailAndPassword(auth, email, password);
+            alert("Account created!");
+        } else {
+            await signInWithEmailAndPassword(auth, email, password);
+            alert("Logged in!");
+            document.getElementById("auth-section").style.display = "none";
+            document.getElementById("main-content").style.display = "block";
+        }
+    } catch (error) {
+        alert(error.message);
+    }
+};
