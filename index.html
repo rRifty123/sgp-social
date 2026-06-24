@@ -1,29 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGP</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body style="background-color: black; color: white;">
-    <div id="app">
-        <!-- Authentication Section -->
-        <section id="auth-section">
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="signUp()">Sign Up / Log In</button>
-        </section>
+<div id="sidebar">
+    <h2>SGP</h2>
+    <ul>
+        <li>Home</li>
+        <li>Explore</li>
+        <li>Notifications</li>
+        <li>Profile</li>
+    </ul>
+</div>
 
-        <!-- Main Feed Section (Mirrors image.png) -->
-        <main id="main-content" style="display: none;">
-            <div id="post-creator">
-                <textarea id="postContent" placeholder="What's up?"></textarea>
-                <button onclick="publishPost()">Post</button>
-            </div>
-            <div id="feed-container"></div>
-        </main>
+<div id="main-content">
+    <section id="auth-section">
+        <h3>Login to SGP</h3>
+        <input id="email" type="email" placeholder="Email">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="handleAuth(false)">Login</button>
+        <button onclick="handleAuth(true)">Sign Up</button>
+    </section>
+
+    <div id="feed-container" style="display:none;">
+        <!-- Posts will render here -->
     </div>
-    <script type="module" src="app.js"></script>
-</body>
-</html>
+</div>
