@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
@@ -11,23 +12,24 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app); // Ensure auth is initialized with the app instance
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-window.handleAuth = async (isSignup) => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    
-    try {
-        if (isSignup) {
-            await createUserWithEmailAndPassword(auth, email, password);
-            alert("Account created!");
-        } else {
-            await signInWithEmailAndPassword(auth, email, password);
-            alert("Logged in!");
-        }
-        // Redirect or refresh UI here
-        location.reload(); 
-    } catch (error) {
-        alert("Error: " + error.message);
+// Splash Screen Transition Logic
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('splash').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('splash').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+        }, 500);
+    }, 2000);
+});
+
+// Authentication Guard
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        console.log("Redirecting to login...");
+        // Logic to show login screen overlay goes here
     }
-};
+});
