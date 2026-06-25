@@ -2,94 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=480">
-    <title>SGP - Social</title>
-    <script type="importmap">
-        { "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
-        }}
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGP Social</title>
     <style>
-        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        #app { width: 100%; max-width: 480px; }
-        .header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #333; }
-        .post { padding: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 480px; display: flex; justify-content: space-around; background: #000; padding: 15px 0; border-top: 1px solid #333; }
-        input, textarea { width: 90%; padding: 10px; margin: 10px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; }
-        button { background: #1d9bf0; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; display: flex; justify-content: center; }
+        #app { width: 100%; max-width: 480px; min-height: 100vh; border-left: 1px solid #222; border-right: 1px solid #222; }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 480px; display: flex; justify-content: space-around; background: #000; border-top: 1px solid #222; padding: 15px 0; }
+        .post { border-bottom: 1px solid #222; padding: 20px; }
         .hidden { display: none; }
+        button { background: #1d9bf0; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <!-- Auth View -->
-    <div id="auth-view">
-        <h1>SGP</h1>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Password">
-        <button id="login-btn">Log In</button>
-        <button id="signup-btn">Sign Up</button>
+    <!-- Auth -->
+    <div id="auth-screen">
+        <h2>Welcome to SGP</h2>
+        <input id="email" placeholder="Email"><input type="password" id="pass" placeholder="Password">
+        <button id="login">Login</button><button id="signup">Signup</button>
     </div>
 
-    <!-- Main App View -->
-    <div id="main-view" class="hidden">
-        <div class="header">
-            <span>SGP</span>
-            <button id="logout-btn">Sign Out</button>
-        </div>
+    <!-- Feed -->
+    <div id="main-screen" class="hidden">
+        <header style="padding:15px; border-bottom:1px solid #222;">SGP</header>
         <div id="feed"></div>
         <div class="nav-bottom">
-            <button onclick="alert('Home')">Home</button>
-            <button onclick="alert('Search')">Search</button>
-            <button onclick="alert('Profile')">Profile</button>
+            <button onclick="navigate('feed')">Home</button>
+            <button onclick="navigate('profile')">Profile</button>
         </div>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "firebase/app";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
-      authDomain: "sgp-social.firebaseapp.com",
-      projectId: "sgp-social",
-      storageBucket: "sgp-social.firebasestorage.app",
-      messagingSenderId: "886036235471",
-      appId: "1:886036235471:web:4bc1421cdc95da504ae3ba"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI", authDomain: "sgp-social.firebaseapp.com", projectId: "sgp-social", storageBucket: "sgp-social.firebasestorage.app", messagingSenderId: "886036235471", appId: "1:886036235471:web:4bc1421cdc95da504ae3ba" };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Authentication Listeners
-    document.getElementById("login-btn").addEventListener("click", () => {
-        signInWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("password").value)
-            .catch(e => alert(e.message));
-    });
+    // Auth Logic
+    document.getElementById("login").onclick = () => signInWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("pass").value);
+    document.getElementById("signup").onclick = () => createUserWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("pass").value);
 
-    document.getElementById("signup-btn").addEventListener("click", () => {
-        createUserWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("password").value)
-            .catch(e => alert(e.message));
-    });
-
-    document.getElementById("logout-btn").addEventListener("click", () => signOut(auth));
-
-    // Toggle View & Persistent State
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            document.getElementById("auth-view").classList.add("hidden");
-            document.getElementById("main-view").classList.remove("hidden");
-        } else {
-            document.getElementById("auth-view").classList.remove("hidden");
-            document.getElementById("main-view").classList.add("hidden");
+            document.getElementById("auth-screen").classList.add("hidden");
+            document.getElementById("main-screen").classList.remove("hidden");
+            loadFeed();
         }
     });
+
+    // Real-time Feed
+    function loadFeed() {
+        const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const feed = document.getElementById("feed");
+            feed.innerHTML = "";
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                feed.innerHTML += `<div class="post">${data.text || "New Post"}<br><button onclick="alert('Liked!')">Like</button></div>`;
+            });
+        });
+    }
+
+    window.navigate = (page) => {
+        if(page === 'profile') alert("Viewing Profile for: " + auth.currentUser.email);
+        else loadFeed();
+    };
 </script>
 </body>
 </html>
