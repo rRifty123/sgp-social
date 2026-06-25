@@ -1,22 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=480">
+    <title>SGP - Social</title>
+    <script type="importmap">
+        { "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+        }}
+    </script>
+    <style>
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        #app { width: 100%; max-width: 480px; }
+        .header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #333; }
+        .post { padding: 20px; border-bottom: 1px solid #333; margin-bottom: 10px; }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; max-width: 480px; display: flex; justify-content: space-around; background: #000; padding: 15px 0; border-top: 1px solid #333; }
+        input, textarea { width: 90%; padding: 10px; margin: 10px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; }
+        button { background: #1d9bf0; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+        .hidden { display: none; }
+    </style>
+</head>
 <body>
-    <div id="sidebar">
+
+<div id="app">
+    <!-- Auth View -->
+    <div id="auth-view">
         <h1>SGP</h1>
-        <nav>
-            <p>Home</p>
-            <p>Explore</p>
-            <p>Notifications</p>
-            <p>Profile</p>
-        </nav>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button id="login-btn">Log In</button>
+        <button id="signup-btn">Sign Up</button>
     </div>
 
-    <main id="main-content">
-        <div id="auth-section">
-            <h2>Welcome to SGP</h2>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Password">
-            <button onclick="handleAuth(false)">Log In</button>
-            <button onclick="handleAuth(true)" style="background:transparent; border:1px solid #0085ff;">Sign Up</button>
+    <!-- Main App View -->
+    <div id="main-view" class="hidden">
+        <div class="header">
+            <span>SGP</span>
+            <button id="logout-btn">Sign Out</button>
         </div>
-    </main>
-    <script type="module" src="app.js"></script>
+        <div id="feed"></div>
+        <div class="nav-bottom">
+            <button onclick="alert('Home')">Home</button>
+            <button onclick="alert('Search')">Search</button>
+            <button onclick="alert('Profile')">Profile</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
+      authDomain: "sgp-social.firebaseapp.com",
+      projectId: "sgp-social",
+      storageBucket: "sgp-social.firebasestorage.app",
+      messagingSenderId: "886036235471",
+      appId: "1:886036235471:web:4bc1421cdc95da504ae3ba"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Authentication Listeners
+    document.getElementById("login-btn").addEventListener("click", () => {
+        signInWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("password").value)
+            .catch(e => alert(e.message));
+    });
+
+    document.getElementById("signup-btn").addEventListener("click", () => {
+        createUserWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("password").value)
+            .catch(e => alert(e.message));
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", () => signOut(auth));
+
+    // Toggle View & Persistent State
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById("auth-view").classList.add("hidden");
+            document.getElementById("main-view").classList.remove("hidden");
+        } else {
+            document.getElementById("auth-view").classList.remove("hidden");
+            document.getElementById("main-view").classList.add("hidden");
+        }
+    });
+</script>
 </body>
+</html>
