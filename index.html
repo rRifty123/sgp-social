@@ -2,17 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGP</title>
+    <style>
+        body { margin: 0; font-family: sans-serif; background: #000; color: #fff; }
+        #splash { height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; position: fixed; width: 100%; z-index: 100; transition: opacity 0.5s; }
+        .logo { color: #007bff; font-size: 5rem; }
+        #app { display: none; padding: 20px; }
+        #auth-box { max-width: 300px; margin: 100px auto; text-align: center; }
+        input { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
 </head>
 <body>
+
     <div id="splash"><h1 class="logo">S</h1></div>
-    
-    <div id="app" style="display:none;">
-        <nav id="navbar">SGP</nav>
-        <main id="feed">
-            </main>
+
+    <div id="app">
+        <h1>SGP</h1>
+        <div id="auth-box">
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="pass" placeholder="Password">
+            <button id="loginBtn">Login / Sign Up</button>
+        </div>
+        <div id="feed" style="margin-top:20px;"></div>
     </div>
-    
-    <script type="module" src="app.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
+            authDomain: "sgp-social.firebaseapp.com",
+            projectId: "sgp-social",
+            storageBucket: "sgp-social.firebasestorage.app",
+            messagingSenderId: "886036235471",
+            appId: "1:886036235471:web:4bc1421cdc95da504ae3ba"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Transition Logic
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('splash').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('splash').style.display = 'none';
+                    document.getElementById('app').style.display = 'block';
+                }, 500);
+            }, 2000);
+        });
+
+        // Simple Auth Logic
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            createUserWithEmailAndPassword(auth, email, pass)
+                .catch(() => signInWithEmailAndPassword(auth, email, pass))
+                .then(() => alert("Logged in successfully!"))
+                .catch(err => alert(err.message));
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) document.getElementById('auth-box').innerHTML = "<h2>Welcome to SGP</h2>";
+        });
+    </script>
 </body>
 </html>
