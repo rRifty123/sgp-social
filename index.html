@@ -1,73 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGP</title>
-    <style>
-        body { margin: 0; font-family: sans-serif; background: #000; color: #fff; }
-        #splash { height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; position: fixed; width: 100%; z-index: 100; transition: opacity 0.5s; }
-        .logo { color: #007bff; font-size: 5rem; }
-        #app { display: none; padding: 20px; }
-        #auth-box { max-width: 300px; margin: 100px auto; text-align: center; }
-        input { display: block; width: 100%; margin: 10px 0; padding: 10px; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-    <div id="splash"><h1 class="logo">S</h1></div>
-
-    <div id="app">
-        <h1>SGP</h1>
-        <div id="auth-box">
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="pass" placeholder="Password">
-            <button id="loginBtn">Login / Sign Up</button>
-        </div>
-        <div id="feed" style="margin-top:20px;"></div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBlUwtRiZ0dEw881_PV6JK3nFeKF2gwAMI",
-            authDomain: "sgp-social.firebaseapp.com",
-            projectId: "sgp-social",
-            storageBucket: "sgp-social.firebasestorage.app",
-            messagingSenderId: "886036235471",
-            appId: "1:886036235471:web:4bc1421cdc95da504ae3ba"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        // Transition Logic
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('splash').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('splash').style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                }, 500);
-            }, 2000);
-        });
-
-        // Simple Auth Logic
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            createUserWithEmailAndPassword(auth, email, pass)
-                .catch(() => signInWithEmailAndPassword(auth, email, pass))
-                .then(() => alert("Logged in successfully!"))
-                .catch(err => alert(err.message));
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) document.getElementById('auth-box').innerHTML = "<h2>Welcome to SGP</h2>";
-        });
-    </script>
-</body>
+ <head>
+  <meta charset="utf-8"/>
+  <link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <link href="/manifest.json" rel="manifest"/>
+  <title>
+   Login | SGP
+  </title>
+  <script crossorigin="" src="/assets/index-DZaSfnPc.js" type="module">
+  </script>
+  <link crossorigin="" href="/assets/index-CLgVyLnM.css" rel="stylesheet"/>
+  <script type="module">
+   if (window.self === window.top) {
+  let lastPath = "";
+  function getPageNameFromPath(path) {
+    const segments = path.split("/").filter(Boolean);
+    return segments[0] || null;
+  }
+  function trackPageView() {
+    const path = window.location.pathname;
+    if (path === lastPath) return;
+    lastPath = path;
+    const pageName = getPageNameFromPath(path) || "home";
+    const appId = "6a3d5158fe4e4379f1d76a50";
+    if (!appId) return;
+    fetch(`/api/app-logs/${appId}/log-user-in-app/${pageName}`, {
+      method: "POST",
+    }).catch(() => {});
+  }
+  const originalPushState = history.pushState.bind(history);
+  history.pushState = function (...args) {
+    originalPushState(...args);
+    trackPageView();
+  };
+  const originalReplaceState = history.replaceState.bind(history);
+  history.replaceState = function (...args) {
+    originalReplaceState(...args);
+    trackPageView();
+  };
+  window.addEventListener("popstate", trackPageView);
+  trackPageView();
+}
+  </script>
+  <meta content="Login on SGP. A refined social hub that blends real-time micro-blogging with deep community co." name="description"/>
+  <meta content="Login | SGP" property="og:title"/>
+  <meta content="Login on SGP. A refined social hub that blends real-time micro-blogging with deep community co." property="og:description"/>
+  <meta content="https://media.base44.com/images/public/6a3d5158fe4e4379f1d76a50/de3fd9d46_logo.png/v1/fill/w_1200,h_630/de3fd9d46_logo.png" property="og:image"/>
+  <meta content="https://sgp-social-2-0.base44.app/login" property="og:url"/>
+  <meta content="website" property="og:type"/>
+  <meta content="SGP" property="og:site_name"/>
+  <meta content="Login | SGP" name="twitter:title"/>
+  <meta content="Login on SGP. A refined social hub that blends real-time micro-blogging with deep community co." name="twitter:description"/>
+  <meta content="https://media.base44.com/images/public/6a3d5158fe4e4379f1d76a50/de3fd9d46_logo.png/v1/fill/w_1200,h_630/de3fd9d46_logo.png" name="twitter:image"/>
+  <meta content="summary_large_image" name="twitter:card"/>
+  <meta content="https://sgp-social-2-0.base44.app/login" name="twitter:url"/>
+  <meta content="yes" name="mobile-web-app-capable"/>
+  <meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+  <meta content="SGP" name="apple-mobile-web-app-title"/>
+  <link href="https://sgp-social-2-0.base44.app/login" rel="canonical"/>
+  <script data-seo-source="builder" type="application/ld+json">
+   {"name": "SGP", "@context": "https://schema.org", "@type": "WebSite", "url": "https://sgp-social-2-0.base44.app"}
+  </script>
+  <script data-seo-source="builder" type="application/ld+json">
+   {"name": "SGP", "logo": "https://media.base44.com/images/public/6a3d5158fe4e4379f1d76a50/de3fd9d46_logo.png", "@context": "https://schema.org", "@type": "Organization", "url": "https://sgp-social-2-0.base44.app"}
+  </script>
+  <script data-seo-source="builder" type="application/ld+json">
+   {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://sgp-social-2-0.base44.app/"}, {"@type": "ListItem", "position": 2, "name": "Login | SGP", "item": "https://sgp-social-2-0.base44.app/login"}]}
+  </script>
+ </head>
+ <body>
+  <div id="root">
+   <div data-seo-source="builder" id="seo-snapshot" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+    <main>
+     <header>
+      <h1>
+       Login | SGP
+      </h1>
+      <p>
+       Login on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+      </p>
+     </header>
+     <nav aria-label="Pages">
+      <h2>
+       Pages
+      </h2>
+      <ul>
+       <li>
+        <a href="/bookmarks">
+         Bookmarks
+        </a>
+        — Bookmarks on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/settings">
+         Settings
+        </a>
+        — Settings on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/UserProfile">
+         User Profile
+        </a>
+        — User Profile on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/login">
+         Login
+        </a>
+        — Login on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/PostDetail">
+         Post Detail
+        </a>
+        — Post Detail on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/profile">
+         Profile
+        </a>
+        — Profile on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/reset-password">
+         Reset Password
+        </a>
+        — Reset Password on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/register">
+         Register
+        </a>
+        — Register on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/">
+         Home
+        </a>
+       </li>
+       <li>
+        <a href="/messages">
+         Messages
+        </a>
+        — Messages on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/Conversation">
+         Conversation
+        </a>
+        — Conversation on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/forgot-password">
+         Forgot Password
+        </a>
+        — Forgot Password on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/notifications">
+         Notifications
+        </a>
+        — Notifications on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/compose">
+         Compose
+        </a>
+        — Compose on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/explore">
+         Explore
+        </a>
+        — Explore on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/stories">
+         Stories
+        </a>
+        — Stories on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/events">
+         Events
+        </a>
+        — Events on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+       <li>
+        <a href="/admin">
+         Admin
+        </a>
+        — Admin on SGP. A refined social hub that blends real-time micro-blogging with deep community co.
+       </li>
+      </ul>
+     </nav>
+    </main>
+   </div>
+  </div>
+ </body>
 </html>
